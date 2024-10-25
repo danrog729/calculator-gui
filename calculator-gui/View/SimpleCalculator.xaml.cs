@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace calculator_gui
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for SimpleCalculator.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class SimpleCalculator : Page
     {
-        public MainWindow()
+        public SimpleCalculator()
         {
             InitializeComponent();
         }
@@ -43,7 +43,8 @@ namespace calculator_gui
         }
         private void Button_Negate_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock_CalcOutput.Text += " NOT IMPLEMENTED ";
+            if (!String.IsNullOrEmpty(TextBlock_CalcOutput.Text))
+                TextBlock_CalcOutput.Text = "-(" + TextBlock_CalcOutput.Text + ")";
         }
 
 
@@ -66,7 +67,7 @@ namespace calculator_gui
         }
         private void Button_Reciprocal_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock_CalcOutput.Text += "^-1 ";
+            TextBlock_CalcOutput.Text += "^(-1) ";
         }
 
 
@@ -88,15 +89,15 @@ namespace calculator_gui
         }
         private void Button_Equals_Click(object sender, RoutedEventArgs e)
         {
-            FreeformCalculator calculator = new FreeformCalculator();
-            calculator.Input = TextBlock_CalcOutput.Text;
+            FreeformCalculator calculator = new FreeformCalculator() { Input = TextBlock_CalcOutput.Text };
+            float output = calculator.Evaluate();
             if (!calculator.isValidExpression)
             {
-                TextBlock_CalcOutput.Text = "Syntax Error";
+                TextBlock_CalcOutput.Text = "Syntax error";
             }
             else
             {
-                TextBlock_CalcOutput.Text = calculator.Evaluate().ToString();
+                TextBlock_CalcOutput.Text = output.ToString();
             }
         }
 
