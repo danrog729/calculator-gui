@@ -63,6 +63,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="rpn-calc.cs" />
     <Compile Include="SimpleCalculator.xaml.cs">
       <DependentUpon>SimpleCalculator.xaml</DependentUpon>
       <SubType>Code</SubType>

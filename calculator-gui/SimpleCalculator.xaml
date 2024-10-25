@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:calculator_gui"
         mc:Ignorable="d"
-        Title="Calculator" Height="450" Width="300">
+        Title="Calculator" Height="450" Width="375"
+        MinHeight="270" MinWidth="225">
+    <Window.Resources>
+        <SolidColorBrush x:Key="NumberColour" Color="#FFFFFF" />
+    </Window.Resources>
+    
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
@@ -19,32 +24,37 @@
             <ColumnDefinition />
             <ColumnDefinition />
             <ColumnDefinition />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4" Margin="5"
+        <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="5" Margin="5"
                 Background="LightGray" BorderBrush="Gray" BorderThickness="1">
-            <TextBlock FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center">calc output</TextBlock>
+            <TextBlock Name="TextBlock_CalcOutput" FontSize="50" FontFamily="Math Roman"
+                       Margin="10" HorizontalAlignment="Right" VerticalAlignment="Center"></TextBlock>
         </Border>
 
-        <Button Grid.Column="0" Grid.Row="1" Margin="5">7</Button>
-        <Button Grid.Column="1" Grid.Row="1" Margin="5">8</Button>
-        <Button Grid.Column="2" Grid.Row="1" Margin="5">9</Button>
-        <Button Grid.Column="3" Grid.Row="1" Margin="5">+</Button>
+        <Button Grid.Column="0" Grid.Row="1" Margin="5" Click="Button_7_Click" Background="NumberColoru">7</Button>
+        <Button Grid.Column="1" Grid.Row="1" Margin="5" Click="Button_8_Click">8</Button>
+        <Button Grid.Column="2" Grid.Row="1" Margin="5" Click="Button_9_Click">9</Button>
+        <Button Grid.Column="3" Grid.Row="1" Margin="5" Click="Button_Add_Click">+</Button>
+        <Button Grid.Column="4" Grid.Row="1" Margin="5" Click="Button_Negate_Click">±</Button>
 
-        <Button Grid.Column="0" Grid.Row="2" Margin="5">4</Button>
-        <Button Grid.Column="1" Grid.Row="2" Margin="5">5</Button>
-        <Button Grid.Column="2" Grid.Row="2" Margin="5">6</Button>
-        <Button Grid.Column="3" Grid.Row="2" Margin="5">-</Button>
+        <Button Grid.Column="0" Grid.Row="2" Margin="5" Click="Button_4_Click">4</Button>
+        <Button Grid.Column="1" Grid.Row="2" Margin="5" Click="Button_5_Click">5</Button>
+        <Button Grid.Column="2" Grid.Row="2" Margin="5" Click="Button_6_Click">6</Button>
+        <Button Grid.Column="3" Grid.Row="2" Margin="5" Click="Button_Minus_Click">-</Button>
+        <Button Grid.Column="4" Grid.Row="2" Margin="5" Click="Button_Reciprocal_Click">x^-1</Button>
 
-        <Button Grid.Column="0" Grid.Row="3" Margin="5">1</Button>
-        <Button Grid.Column="1" Grid.Row="3" Margin="5">2</Button>
-        <Button Grid.Column="2" Grid.Row="3" Margin="5">3</Button>
-        <Button Grid.Column="3" Grid.Row="3" Margin="5">*</Button>
+        <Button Grid.Column="0" Grid.Row="3" Margin="5" Click="Button_1_Click">1</Button>
+        <Button Grid.Column="1" Grid.Row="3" Margin="5" Click="Button_2_Click">2</Button>
+        <Button Grid.Column="2" Grid.Row="3" Margin="5" Click="Button_3_Click">3</Button>
+        <Button Grid.Column="3" Grid.Row="3" Margin="5" Click="Button_Multiply_Click">*</Button>
+        <Button Grid.Column="4" Grid.Row="3" Grid.RowSpan="2" Margin="5" Click="Button_Equals_Click">=</Button>
 
-        <Button Grid.Column="0" Grid.Row="4" Margin="5">C</Button>
-        <Button Grid.Column="1" Grid.Row="4" Margin="5">0</Button>
-        <Button Grid.Column="2" Grid.Row="4" Margin="5">=</Button>
-        <Button Grid.Column="3" Grid.Row="4" Margin="5">/</Button>
+        <Button Grid.Column="0" Grid.Row="4" Margin="5" Click="Button_Clear_Click">C</Button>
+        <Button Grid.Column="1" Grid.Row="4" Margin="5" Click="Button_0_Click">0</Button>
+        <Button Grid.Column="2" Grid.Row="4" Margin="5" Click="Button_Backspace_Click">DEL</Button>
+        <Button Grid.Column="3" Grid.Row="4" Margin="5" Click="Button_Divide_Click">/</Button>
         
     </Grid>
 </Window>
