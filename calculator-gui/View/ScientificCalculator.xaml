@@ -10,12 +10,37 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="2*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="1">y = </TextBlock>
+        <Border Style="{DynamicResource Border}" Margin="5,5,5,10">
+            <Border.Background>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing x:Name="GraphDrawing"/>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Border.Background>
+        </Border>
+        <GridSplitter Grid.Row="1"
+                      Background="{DynamicResource Foreground}"
+                      HorizontalAlignment="Stretch" Height="5" Margin="10,0,10,0"/>
+        <ScrollViewer Grid.Row="2" Margin="5">
+            <StackPanel>
+                <Border Style="{DynamicResource Border}" Margin="0,5,0,5">
+                    <TextBlock Margin="10" Style="{DynamicResource StandardTextBlock}">y=sinx</TextBlock>
+                </Border>
+                <Border Style="{DynamicResource Border}" Margin="0,5,0,5">
+                    <TextBlock Margin="10" Style="{DynamicResource StandardTextBlock}">y=sinx</TextBlock>
+                </Border>
+                <Border Style="{DynamicResource Border}" Margin="0,5,0,5">
+                    <TextBlock Margin="10" Style="{DynamicResource StandardTextBlock}">y=sinx</TextBlock>
+                </Border>
+                <Border Style="{DynamicResource Border}" Margin="0,5,0,5">
+                    <TextBlock Margin="10" Style="{DynamicResource StandardTextBlock}">y=sinx</TextBlock>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

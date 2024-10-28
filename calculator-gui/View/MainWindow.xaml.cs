@@ -19,6 +19,8 @@ namespace calculator_gui
     /// </summary>
     public partial class MainWindow : Window
     {
+        Settings settings = new Settings();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -27,23 +29,40 @@ namespace calculator_gui
         public void Load_SimpleCalculator(object sender, RoutedEventArgs e)
         {
             Frame_Calculator.Source = new Uri("SimpleCalculator.xaml", UriKind.Relative);
+            SimpleButton.IsEnabled = false;
+            ScientificButton.IsEnabled = true;
+            ProgrammerButton.IsEnabled = true;
         }
 
         public void Load_ScientificCalculator(object sender, RoutedEventArgs e)
         {
             Frame_Calculator.Source = new Uri("ScientificCalculator.xaml", UriKind.Relative);
+            SimpleButton.IsEnabled = true;
+            ScientificButton.IsEnabled = false;
+            ProgrammerButton.IsEnabled = true;
+        }
+
+        public void Load_ProgrammerCalculator(object sender, RoutedEventArgs e)
+        {
+            Frame_Calculator.Source = new Uri("ProgrammerCalculator.xaml", UriKind.Relative);
+            SimpleButton.IsEnabled = true;
+            ScientificButton.IsEnabled = true;
+            ProgrammerButton.IsEnabled = false;
         }
 
         public void Load_Settings(object sender, RoutedEventArgs e)
         {
-            Settings settings = new Settings();
+            //if (settings == null)
+            //{
+            //    settings = new Settings();
+            //}
             settings.Owner = this;
             settings.Show();
         }
 
         public void CloseApplication(object sender, RoutedEventArgs e)
         {
-            Close();
+            App.MainApp.Shutdown();
         }
 
         public void MaximiseApplication(object sender, RoutedEventArgs e)

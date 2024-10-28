@@ -20,9 +20,13 @@ namespace calculator_gui
     /// </summary>
     public partial class ScientificCalculator : Page
     {
+        Grapher grapher;
+
         public ScientificCalculator()
         {
             InitializeComponent();
+            //grapher = new Grapher(100, 100);
+            //grapher.UpdateFrame(GraphDrawing);
         }
     }
 }

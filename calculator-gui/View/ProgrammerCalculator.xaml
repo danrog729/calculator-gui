@@ -1,0 +1,464 @@
+﻿<Page x:Class="calculator_gui.ProgrammerCalculator"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:calculator_gui"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="420"
+      Title="ProgrammerCalculator">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Margin="5,5,5,-5" Style="{DynamicResource Border}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewer}">
+                <StackPanel>
+                    <Viewbox HorizontalAlignment="Left" Margin="5" MaxHeight="40">
+                        
+                    </Viewbox>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <Border Grid.Row="1" Margin="5,0,5,5" Style="{DynamicResource Border}">
+            <Viewbox HorizontalAlignment="Left" Margin="5">
+                <TextBox Name="OutputTextBox" Style="{DynamicResource TextBox}" />
+            </Viewbox>
+        </Border>
+
+        <Border Grid.Row="3" Style="{DynamicResource Border}" Margin="5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*" MinWidth="230" MaxWidth="500"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="15"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Viewbox Grid.Row="0" Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">63</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="1" Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">47</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">31</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="3" Grid.Column="0" Margin="0,0,5,0" >
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">15</TextBlock>
+                    </Viewbox>
+
+                    <Viewbox Grid.Row="0" Grid.Column="5" Margin="5,0,0,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">48</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="1" Grid.Column="5" Margin="5,0,0,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">32</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="2" Grid.Column="5" Margin="5,0,0,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">16</TextBlock>
+                    </Viewbox>
+                    <Viewbox Grid.Row="3" Grid.Column="5" Margin="5,0,0,0">
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource StandardTextBlock}">00</TextBlock>
+                    </Viewbox>
+
+                    <UniformGrid Grid.Column="1" Grid.Row="0" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit63" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit62" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit61" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit60" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                    </UniformGrid>
+
+                    <UniformGrid Grid.Column="2" Columns="4" Grid.Row="0" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit59" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit58" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit57" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit56" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="3" Columns="4" Grid.Row="0" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit55" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit54" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit53" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit52" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="4" Columns="4" Grid.Row="0" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit51" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit50" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit49" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit48" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                    </UniformGrid>
+
+                    <UniformGrid Grid.Column="1" Grid.Row="1" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit47" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit46" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit45" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit44" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="2" Grid.Row="1" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit43" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit42" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit41" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit40" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="3" Grid.Row="1" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit39" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit38" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit37" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit36" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="4" Grid.Row="1" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit35" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit34" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit33" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit32" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+
+                    <UniformGrid Grid.Column="1" Grid.Row="2" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit31" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit30" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit29" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit28" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="2" Grid.Row="2" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit27" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit26" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit25" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                        <Button Name="Bit24" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1">0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="3" Grid.Row="2" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit23" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit22" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit21" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit20" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="4" Grid.Row="2" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit19" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit18" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit17" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit16" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+
+                    <UniformGrid Grid.Column="1" Grid.Row="3" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit15" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit14" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit13" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit12" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="2" Grid.Row="3" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit11" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit10" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit9" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit8" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="3" Grid.Row="3" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit7" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit6" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit5" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                        <Button Name="Bit4" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="1" >0</Button>
+                    </UniformGrid>
+                    <UniformGrid Grid.Column="4" Grid.Row="3" Columns="4" Margin="5,0,5,0" MaxHeight="40">
+                        <Button Name="Bit3" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="2" >0</Button>
+                        <Button Name="Bit2" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="2" >0</Button>
+                        <Button Name="Bit1" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="2" >0</Button>
+                        <Button Name="Bit0" Click="BitButtonPressed" Style="{DynamicResource InvisibleButton}" Margin="2" >0</Button>
+                    </UniformGrid>
+
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="4" Style="{DynamicResource Border}" Margin="5">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Button Name="Button7" Grid.Row="0" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="7" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">7</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button8" Grid.Row="0" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="8" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">8</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button9" Grid.Row="0" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="9" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">9</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonF" Grid.Row="0" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="F" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">F</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button4" Grid.Row="1" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="4" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">4</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button5" Grid.Row="1" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="5" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">5</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button6" Grid.Row="1" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="6" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">6</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonE" Grid.Row="1" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="E" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">E</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button1" Grid.Row="2" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="1" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">1</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button2" Grid.Row="2" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="2" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">2</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button3" Grid.Row="2" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="3" Click="AppendDigit"> 
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">3</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonD" Grid.Row="2" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="D" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">D</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="Button0" Grid.Row="3" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="0" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">0</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonA" Grid.Row="3" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="A" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">A</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonB" Grid.Row="3" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="B" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">B</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Name="ButtonC" Grid.Row="3" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="C" Click="AppendDigit">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">C</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="4" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" + ">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">+</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="4" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" - ">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">-</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="4" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" * ">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">*</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="4" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" / ">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">/</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="(">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">(</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="0" Grid.Column="6" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=")">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">)</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="^(-1)">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">𝑥⁻¹</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="6" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="^">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">𝑥ʸ</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="5" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">±</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="6" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">|𝑥|</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=".">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">.</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="6" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">π</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">&lt;&lt;</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="0" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">&gt;&gt;</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">AND</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="5,2,5,2" Style="{DynamicResource StandardTextBlock}">OR</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">XOR</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">NOT</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="3" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">DIV</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">MOD</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="0" Grid.Column="9" Margin="2" Style="{DynamicResource AccentButton}" Click="ButtonDEL_Pressed">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">DEL</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="0" Grid.Column="10" Margin="2" Style="{DynamicResource AccentButton}" Click="ButtonAC_Pressed">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">AC</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="1" Grid.Column="9" Margin="2" Style="{DynamicResource Button}" Click="MoveCursorLeft">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">←</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="10" Margin="2" Style="{DynamicResource Button}" Click="MoveCursorRight">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">→</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="2" Grid.Column="9" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">log₂</TextBlock>
+                    </Viewbox>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="9" Margin="2" Style="{DynamicResource Button}">
+                    <Viewbox>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">×2ˣ</TextBlock>
+                    </Viewbox>
+                </Button>
+
+                <Button Grid.Row="2" Grid.Column="10" Grid.RowSpan="2" Margin="2" Style="{DynamicResource AccentButton}">
+                    <Viewbox>
+                        <TextBlock Margin="2,2,2,5" Style="{DynamicResource AccentTextBlock}">=</TextBlock>
+                    </Viewbox>
+                </Button>
+
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110"/>
+                <ColumnDefinition Width="110"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Viewbox Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
+                <TextBlock Name="ConversionPreview" Style="{DynamicResource ImportantTextBlock}" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10">10</TextBlock>
+            </Viewbox>
+            <ComboBox Name="BaseSelector" Grid.Column="0" Style="{DynamicResource ComboBox}" Margin="5" Width="100" HorizontalAlignment="Left" SelectionChanged="BaseChanged">
+                <ComboBoxItem Content="Binary"/>
+                <ComboBoxItem Content="Octal"/>
+                <ComboBoxItem IsSelected="True" Content="Decimal"/>
+                <ComboBoxItem Content="Hexadecimal"/>
+            </ComboBox>
+            <ComboBox Name="WordSize" Grid.Column="1" Style="{DynamicResource ComboBox}" Margin="5" Width="100" HorizontalAlignment="Left" SelectionChanged="WordSizeChanged">
+                <ComboBoxItem Content="8-bit"/>
+                <ComboBoxItem Content="16-bit"/>
+                <ComboBoxItem Content="32-bit"/>
+                <ComboBoxItem IsSelected="True" Content="64-bit"/>
+            </ComboBox>
+        </Grid>
+    </Grid>
+</Page>

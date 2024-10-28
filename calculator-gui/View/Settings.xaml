@@ -5,21 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:calculator_gui"
         mc:Ignorable="d"
-        Title="Settings" Height="300" Width="500"
-        Background="{DynamicResource Background}">
-    <StackPanel>
-        
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10" Foreground="{DynamicResource StandardText}">Theme</TextBlock>
-            <ComboBox Name="ThemeSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeTheme">
-                <ComboBoxItem IsSelected="True">Light</ComboBoxItem>
-                <ComboBoxItem>Dark</ComboBoxItem>
-            </ComboBox>
+        Title="Settings" Height="300" Width="375"
+        MinHeight="100" MinWidth="200"
+        Background="{DynamicResource Background}"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize"
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0"
+                      ResizeBorderThickness="5"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Background="Transparent" MouseDown="TitleBar_Dragged">
+            <TextBlock Margin="10" VerticalAlignment="Center"
+                       Style="{DynamicResource ImportantTextBlock}">Settings</TextBlock>
+            <Button Grid.Row="0" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0"
+                    Style="{DynamicResource ImportantButton}" Click="CloseApplication" FontFamily="Webdings">r</Button>
+            <Button Grid.Row="0" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,35,0" Name="MaximiseButton"
+                    Style="{DynamicResource ImportantButton}" Click="MaximiseApplication" FontFamily="Webdings">1</Button>
+            <Button Grid.Row="0" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,60,0" Name="MinimiseButton"
+                    Style="{DynamicResource ImportantButton}" Click="MinimiseApplication" FontFamily="Webdings">0</Button>
         </Grid>
-        
-    </StackPanel>
+
+        <Border Grid.Row="1" Margin="10,0,10,10" Style="{DynamicResource Border}">
+            <StackPanel >
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Theme</TextBlock>
+                    <ComboBox Name="ThemeSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeTheme" Style="{DynamicResource SettingsComboBox}"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Angle</TextBlock>
+                    <ComboBox Name="AngleSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeAngleType" Style="{DynamicResource SettingsComboBox}">
+                        <ComboBoxItem IsSelected="True" Content="Degrees"/>
+                        <ComboBoxItem Content="Radians"/>
+                    </ComboBox>
+                </Grid>
+
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

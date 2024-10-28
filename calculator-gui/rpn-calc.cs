@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace calculator_gui
 {
@@ -21,24 +22,35 @@ namespace calculator_gui
                 ShuntingYard();
             }
         }
-        private List<Token> tokenList;
+        private List<Token> _tokenList;
+        public List<Token> TokenList
+        {
+            get { return _tokenList; }
+            set
+            {
+                CorrectTokens();
+                ShuntingYard();
+            }
+        }
         private List<Token> correctedTokenList;
         private Queue<Token> expression;
         private readonly HashSet<char> operators;
         public bool isValidExpression;
+        public int numberBase;
 
         public FreeformCalculator()
         {
             _input = "";
             expression = new Queue<Token>();
-            tokenList = new List<Token>();
+            _tokenList = new List<Token>();
             isValidExpression = false;
-            operators = new HashSet<char> { '+', '-', '*', '/', '^', '(', ')' };
+            operators = new HashSet<char> { '+', '-', '*', '×', '/', '÷', '^', '(', ')', '~', '&', '|', '⊕' };
+            numberBase = 10;
         }
 
         private void Tokenise()
         {
-            tokenList = new List<Token>();
+            List<Token> workingTokenList = new List<Token>();
 
             _input = _input.Replace(" ", "");
             _input = _input.Replace(",", "");
@@ -57,19 +69,29 @@ namespace calculator_gui
                     switch (_input[index])
                     {
                         case '+':
-                            tokenList.Add(new AdditionToken()); break;
+                            workingTokenList.Add(new AdditionToken()); break;
                         case '-':
-                            tokenList.Add(new SubtractionToken()); break;
+                            workingTokenList.Add(new SubtractionToken()); break;
                         case '*':
-                            tokenList.Add(new MultiplicationToken()); break;
+                        case '×':
+                            workingTokenList.Add(new MultiplicationToken()); break;
                         case '/':
-                            tokenList.Add(new DivisionToken()); break;
+                        case '÷':
+                            workingTokenList.Add(new DivisionToken()); break;
                         case '^':
-                            tokenList.Add(new ExponentiationToken()); break;
+                            workingTokenList.Add(new ExponentiationToken()); break;
                         case '(':
-                            tokenList.Add(new OpenBracketToken()); break;
+                            workingTokenList.Add(new OpenBracketToken()); break;
                         case ')':
-                            tokenList.Add(new CloseBracketToken()); break;
+                            workingTokenList.Add(new CloseBracketToken()); break;
+                        case '~':
+                            workingTokenList.Add(new NotToken()); break;
+                        case '&':
+                            workingTokenList.Add(new AndToken()); break;
+                        case '|':
+                            workingTokenList.Add(new OrToken()); break;
+                        case '⊕':
+                            workingTokenList.Add(new XorToken()); break;
                         default:
                             isValidExpression = false;
                             return;
@@ -108,12 +130,20 @@ namespace calculator_gui
 
                         // tokenise
                         string inputSubstring = _input.Substring(tokenStart, tokenEnd - tokenStart + 1);
-                        if (!Single.TryParse(inputSubstring, out float inputFloat))
+                        float inputFloat;
+                        if (!hasDecimal)
                         {
-                            isValidExpression = false;
-                            return;
+                            long integer = Convert.ToInt64(inputSubstring, numberBase);
+                            inputFloat = (float)integer;
                         }
-                        tokenList.Add(new FloatToken(inputFloat));
+                        else
+                        {
+                            string[] splitString = inputSubstring.Split('.');
+                            int integerPart = Convert.ToInt32(splitString[0], numberBase);
+                            int nonIntPart = Convert.ToInt32(splitString[1], numberBase);
+                            inputFloat = (float)integerPart + (float)nonIntPart / (float)Math.Pow(numberBase, splitString[1].Length);
+                        }
+                        workingTokenList.Add(new FloatToken(inputFloat));
 
                         // start the next token
                         tokenStart = index + 1;
@@ -121,12 +151,13 @@ namespace calculator_gui
                     }
                 }
             }
+            _tokenList = workingTokenList;
         }
 
         private void CorrectTokens()
         {
             correctedTokenList = new List<Token>();
-            foreach (Token token in tokenList)
+            foreach (Token token in _tokenList)
             {
                 correctedTokenList.Add(token);
             }
@@ -233,7 +264,7 @@ namespace calculator_gui
             }
         }
 
-        public float Evaluate()
+        public double Evaluate()
         {
             Stack<FloatToken> workingStack = new Stack<FloatToken>();
             while (expression.Count > 0)
@@ -246,9 +277,17 @@ namespace calculator_gui
                         isValidExpression = false;
                         return 0f;
                     }
-                    float secondArg = workingStack.Pop().value;
-                    float firstArg = workingStack.Pop().value;
-                    workingStack.Push(new FloatToken(opToken.Operate(firstArg, secondArg)));
+                    if (opToken.argumentCount == 1)
+                    {
+                        double firstArg = workingStack.Pop().value;
+                        workingStack.Push(new FloatToken(opToken.Operate(firstArg, 0f)));
+                    }
+                    else
+                    {
+                        double secondArg = workingStack.Pop().value;
+                        double firstArg = workingStack.Pop().value;
+                        workingStack.Push(new FloatToken(opToken.Operate(firstArg, secondArg)));
+                    }
                 }
                 else
                 {
@@ -262,6 +301,40 @@ namespace calculator_gui
             }
             return workingStack.Peek().value;
         }
+
+        public override string ToString()
+        {
+            string output = "";
+            foreach (Token token in _tokenList)
+            {
+                if (token is OperatorToken)
+                {
+                    output += token.ToString();
+                }
+                else
+                {
+                    output += ((FloatToken)token).ToString(numberBase);
+                }
+            }
+            return output;
+        }
+
+        public string ToString(int newBase)
+        {
+            string output = "";
+            foreach (Token token in _tokenList)
+            {
+                if (token is OperatorToken)
+                {
+                    output += token.ToString();
+                }
+                else
+                {
+                    output += ((FloatToken)token).ToString(newBase);
+                }
+            }
+            return output;
+        }
     }
 
     public abstract class Token
@@ -271,9 +344,9 @@ namespace calculator_gui
 
     public class FloatToken : Token
     {
-        public float value;
+        public double value;
 
-        public FloatToken(float newValue)
+        public FloatToken(double newValue)
         {
             value = newValue;
         }
@@ -282,21 +355,46 @@ namespace calculator_gui
         {
             return value.ToString();
         }
+
+        public string ToString(int newBase)
+        {
+            string output = "";
+            int integerPart = (int)value;
+            output += Convert.ToString(integerPart, newBase).ToUpper();
+            if ((float)integerPart != value)
+            {
+                output += ".";
+            }
+            double decimalPart = (double)value - (double)(int)(value);
+            int maxIterations = 5;
+            int iteration = 0;
+            while (decimalPart > Single.Epsilon && iteration < maxIterations)
+            {
+                int bitToRemove = (int)(decimalPart / Math.Pow(newBase, -1));
+                output += bitToRemove;
+                decimalPart -= bitToRemove * (float)Math.Pow(newBase, -1);
+                decimalPart *= newBase;
+                iteration++;
+            }
+            return output;
+        }
     }
 
     public abstract class OperatorToken : Token
     {
         public int precedence;
-        public abstract float Operate(float value1, float value2);
+        public int argumentCount;
+        public abstract double Operate(double value1, double value2);
     }
 
     public class AdditionToken : OperatorToken
     {
         public AdditionToken()
         {
-            precedence = 3;
+            precedence = 4;
+            argumentCount = 2;
         }
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             return value1 + value2;
         }
@@ -311,9 +409,10 @@ namespace calculator_gui
     {
         public SubtractionToken()
         {
-            precedence = 3;
+            precedence = 4;
+            argumentCount = 2;
         }
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             return value1 - value2;
         }
@@ -328,9 +427,10 @@ namespace calculator_gui
     {
         public MultiplicationToken()
         {
-            precedence = 2;
+            precedence = 3;
+            argumentCount = 2;
         }
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             return value1 * value2;
         }
@@ -345,9 +445,10 @@ namespace calculator_gui
     {
         public DivisionToken()
         {
-            precedence = 2;
+            precedence = 3;
+            argumentCount = 2;
         }
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             return value1 / value2;
         }
@@ -362,9 +463,10 @@ namespace calculator_gui
     {
         public ExponentiationToken()
         {
-            precedence = 1;
+            precedence = 2;
+            argumentCount = 2;
         }
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             return (float)Math.Pow(value1, value2);
         }
@@ -380,9 +482,10 @@ namespace calculator_gui
         public OpenBracketToken()
         {
             precedence = 999;
+            argumentCount = 0;
         }
 
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             throw new NotImplementedException();
         }
@@ -398,9 +501,10 @@ namespace calculator_gui
         public CloseBracketToken()
         {
             precedence = 999;
+            argumentCount = 0;
         }
 
-        public override float Operate(float value1, float value2)
+        public override double Operate(double value1, double value2)
         {
             throw new NotImplementedException();
         }
@@ -408,6 +512,90 @@ namespace calculator_gui
         public override string ToString()
         {
             return ")";
+        }
+    }
+
+    public class NotToken : OperatorToken
+    {
+        public NotToken()
+        {
+            precedence = 1;
+            argumentCount = 1;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)(~((int)value1));
+        }
+    }
+
+    public class AndToken : OperatorToken
+    {
+        public AndToken()
+        {
+            precedence = 8;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)((int)value1 & (int)value2);
+        }
+    }
+
+    public class OrToken : OperatorToken
+    {
+        public OrToken()
+        {
+            precedence = 10;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)((int)value1 | (int)value2);
+        }
+    }
+
+    public class XorToken : OperatorToken
+    {
+        public XorToken()
+        {
+            precedence = 9;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)((int)value1 ^ (int)value2);
+        }
+    }
+
+    public class ShiftLeftToken : OperatorToken
+    {
+        public ShiftLeftToken()
+        {
+            precedence = 5;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)((int)value1 << (int)value2);
+        }
+    }
+
+    public class ShiftRightToken : OperatorToken
+    {
+        public ShiftRightToken()
+        {
+            precedence = 5;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (float)((int)value1 >> (int)value2);
         }
     }
 }

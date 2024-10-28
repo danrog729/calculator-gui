@@ -26,33 +26,111 @@
 
         <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="5" Margin="5"
             Style="{DynamicResource Border}">
-            <TextBlock Name="TextBlock_CalcOutput" FontSize="50"
-                   Margin="10" HorizontalAlignment="Right" VerticalAlignment="Center"
-                   Foreground="{DynamicResource ImportantText}"/>
+            <Viewbox HorizontalAlignment="Right" >
+                <TextBlock Name="TextBlock_CalcOutput" FontSize="50"
+                    Margin="10" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Style="{DynamicResource ImportantTextBlock}"/>
+            </Viewbox>
         </Border>
 
-        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="1" Margin="5" Click="Button_7_Click">7</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="1" Margin="5" Click="Button_8_Click">8</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="1" Margin="5" Click="Button_9_Click">9</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="1" Margin="5" Click="Button_Add_Click">+</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="1" Margin="5" Click="Button_Negate_Click">±</Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="1" Margin="5" Click="Button_7_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">7</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="1" Margin="5" Click="Button_8_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">8</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="1" Margin="5" Click="Button_9_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">9</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="1" Margin="5" Click="Button_Add_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">+</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="1" Margin="5" Click="Button_Negate_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">±</TextBlock>
+            </Viewbox>
+        </Button>
 
-        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="2" Margin="5" Click="Button_4_Click">4</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="2" Margin="5" Click="Button_5_Click">5</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="2" Margin="5" Click="Button_6_Click">6</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="2" Margin="5" Click="Button_Minus_Click">-</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="2" Margin="5" Click="Button_Reciprocal_Click">x^-1</Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="2" Margin="5" Click="Button_4_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">4</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="2" Margin="5" Click="Button_5_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">5</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="2" Margin="5" Click="Button_6_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">6</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="2" Margin="5" Click="Button_Minus_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">-</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="2" Margin="5" Click="Button_Reciprocal_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">𝑥⁻¹</TextBlock>
+            </Viewbox>
+        </Button>
 
-        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="3" Margin="5" Click="Button_1_Click">1</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="3" Margin="5" Click="Button_2_Click">2</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="3" Margin="5" Click="Button_3_Click">3</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="3" Margin="5" Click="Button_Multiply_Click">*</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="3" Grid.RowSpan="2" Margin="5" Click="Button_Equals_Click">=</Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="0" Grid.Row="3" Margin="5" Click="Button_1_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">1</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="3" Margin="5" Click="Button_2_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">2</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="2" Grid.Row="3" Margin="5" Click="Button_3_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">3</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="3" Margin="5" Click="Button_Multiply_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">×</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="4" Grid.Row="3" Grid.RowSpan="2" Margin="5" Click="Button_Equals_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2,2,2,5" Style="{DynamicResource AccentTextBlock}">=</TextBlock>
+            </Viewbox>
+        </Button>
 
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="0" Grid.Row="4" Margin="5" Click="Button_Clear_Click">C</Button>
-        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="4" Margin="5" Click="Button_0_Click">0</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="2" Grid.Row="4" Margin="5" Click="Button_Backspace_Click">DEL</Button>
-        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="4" Margin="5" Click="Button_Divide_Click">/</Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="0" Grid.Row="4" Margin="5" Click="Button_Backspace_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">DEL</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource Button}" Grid.Column="1" Grid.Row="4" Margin="5" Click="Button_0_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">0</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="2" Grid.Row="4" Margin="5" Click="Button_Clear_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">AC</TextBlock>
+            </Viewbox>
+        </Button>
+        <Button Style="{DynamicResource AccentButton}" Grid.Column="3" Grid.Row="4" Margin="5" Click="Button_Divide_Click" FontSize="20">
+            <Viewbox>
+                <TextBlock Margin="2" Style="{DynamicResource AccentTextBlock}">÷</TextBlock>
+            </Viewbox>
+        </Button>
 
     </Grid>
 </Page>

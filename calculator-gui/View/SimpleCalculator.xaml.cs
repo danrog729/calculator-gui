@@ -85,12 +85,12 @@ namespace calculator_gui
         }
         private void Button_Multiply_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock_CalcOutput.Text += " * ";
+            TextBlock_CalcOutput.Text += " × ";
         }
         private void Button_Equals_Click(object sender, RoutedEventArgs e)
         {
             FreeformCalculator calculator = new FreeformCalculator() { Input = TextBlock_CalcOutput.Text };
-            float output = calculator.Evaluate();
+            double output = calculator.Evaluate();
             if (!calculator.isValidExpression)
             {
                 TextBlock_CalcOutput.Text = "Syntax error";
@@ -119,7 +119,7 @@ namespace calculator_gui
         }
         private void Button_Divide_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock_CalcOutput.Text += " / ";
+            TextBlock_CalcOutput.Text += " ÷ ";
         }
     }
 }
