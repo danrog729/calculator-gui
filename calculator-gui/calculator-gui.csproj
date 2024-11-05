@@ -106,6 +106,10 @@
     <Compile Include="View\SimpleCalculator.xaml.cs">
       <DependentUpon>SimpleCalculator.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\Themes\Factorio.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Themes\HighContrastDark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -114,7 +118,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Themes\Kerbal.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Themes\Light.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Themes\Perry.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -145,6 +157,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="View\Themes\Fonts\TitilliumWeb-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

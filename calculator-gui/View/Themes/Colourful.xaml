@@ -29,6 +29,9 @@
     </RadialGradientBrush>
 
     <SolidColorBrush x:Key="BorderColour" Color="#00FF00" />
+    <SolidColorBrush x:Key="DisabledBorderColour" Color="#00FF00" />
+    <SolidColorBrush x:Key="FocusedBorderColour" Color="#00FF00" />
+    <SolidColorBrush x:Key="AccentBorderColour" Color="#00FF00" />
     <Thickness x:Key="BorderThickness">2</Thickness>
     <SolidColorBrush x:Key="StandardText" Color="#222222"/>
     <SolidColorBrush x:Key="ImportantText" Color="Black"/>

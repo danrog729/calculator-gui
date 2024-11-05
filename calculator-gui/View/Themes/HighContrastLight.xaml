@@ -6,6 +6,9 @@
     <SolidColorBrush x:Key="FocusedForeground" Color="#aaaaaa"/>
     <SolidColorBrush x:Key="DisabledForeground" Color="#ffffff"/>
     <SolidColorBrush x:Key="BorderColour" Color="#0000AA" />
+    <SolidColorBrush x:Key="DisabledBorderColour" Color="#0000AA" />
+    <SolidColorBrush x:Key="FocusedBorderColour" Color="#0000AA" />
+    <SolidColorBrush x:Key="AccentBorderColour" Color="#0000AA" />
     <Thickness x:Key="BorderThickness">2</Thickness>
     <SolidColorBrush x:Key="StandardText" Color="#222222"/>
     <SolidColorBrush x:Key="ImportantText" Color="Black"/>

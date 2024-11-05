@@ -45,6 +45,9 @@ namespace calculator_gui
             themes.Add(new Theme() { Name = "High Contrast Light", Path = "View/Themes/HighContrastLight.xaml" });
             themes.Add(new Theme() { Name = "High Contrast Dark", Path = "View/Themes/HighContrastDark.xaml" });
             themes.Add(new Theme() { Name = "Colourful", Path = "View/Themes/Colourful.xaml" });
+            themes.Add(new Theme() { Name = "Industrial", Path = "View/Themes/Factorio.xaml" });
+            themes.Add(new Theme() { Name = "Space Age", Path = "View/Themes/Kerbal.xaml" });
+            themes.Add(new Theme() { Name = "Programmer", Path = "View/Themes/Perry.xaml" });
             CurrentTheme = themes[0];
         }
     }

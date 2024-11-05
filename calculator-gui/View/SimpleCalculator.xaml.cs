@@ -89,15 +89,18 @@ namespace calculator_gui
         }
         private void Button_Equals_Click(object sender, RoutedEventArgs e)
         {
-            FreeformCalculator calculator = new FreeformCalculator() { Input = TextBlock_CalcOutput.Text };
-            double output = calculator.Evaluate();
-            if (!calculator.isValidExpression)
+            if (!String.IsNullOrEmpty(TextBlock_CalcOutput.Text))
             {
-                TextBlock_CalcOutput.Text = "Syntax error";
-            }
-            else
-            {
-                TextBlock_CalcOutput.Text = output.ToString();
+                FreeformCalculator calculator = new FreeformCalculator() { Input = TextBlock_CalcOutput.Text };
+                double output = calculator.Evaluate();
+                if (!calculator.isValidExpression)
+                {
+                    TextBlock_CalcOutput.Text = "Syntax error";
+                }
+                else
+                {
+                    TextBlock_CalcOutput.Text = output.ToString();
+                }
             }
         }
 

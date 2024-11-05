@@ -534,7 +534,7 @@ namespace calculator_gui
                 character == 'B' || character == 'b' ||
                 character == 'C' || character == 'c' ||
                 character == 'D' || character == 'd' ||
-                character == 'E' || character == 'e' ||
+                character == 'E' || // e is reserved for euler's number
                 character == 'F' || character == 'f')
             {
                 return true;
@@ -583,7 +583,7 @@ namespace calculator_gui
             while (decimalPart > Single.Epsilon && iteration < maxIterations)
             {
                 int bitToRemove = (int)(decimalPart / Math.Pow(newBase, -1));
-                output += bitToRemove;
+                output += Convert.ToString(bitToRemove, newBase).ToUpper();
                 decimalPart -= bitToRemove * (float)Math.Pow(newBase, -1);
                 decimalPart *= newBase;
                 iteration++;
