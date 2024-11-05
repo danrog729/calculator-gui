@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace calculator_gui
 {
@@ -28,15 +29,19 @@ namespace calculator_gui
             get { return _tokenList; }
             set
             {
+                _tokenList = value;
+                isValidExpression = true;
+                _input = ToString();
                 CorrectTokens();
                 ShuntingYard();
             }
         }
         private List<Token> correctedTokenList;
         private Queue<Token> expression;
-        private readonly HashSet<char> operators;
+        private readonly HashSet<char> singleOperators;
+        private readonly HashSet<string> otherOperators;
         public bool isValidExpression;
-        public int numberBase;
+        public uint CurrentBase;
 
         public FreeformCalculator()
         {
@@ -44,8 +49,9 @@ namespace calculator_gui
             expression = new Queue<Token>();
             _tokenList = new List<Token>();
             isValidExpression = false;
-            operators = new HashSet<char> { '+', '-', '*', '×', '/', '÷', '^', '(', ')', '~', '&', '|', '⊕' };
-            numberBase = 10;
+            singleOperators = new HashSet<char> { '+', '-', '*', '×', '/', '÷', '^', '(', ')', '~', '&', '∨', '⊕', '≪', '≫', '|', '⫽', '%' };
+            otherOperators = new HashSet<string> { "log_" , "ln" };
+            CurrentBase = 10;
         }
 
         private void Tokenise()
@@ -61,9 +67,32 @@ namespace calculator_gui
 
             for (int index = 0; index < _input.Length; index++)
             {
-                if (operators.Contains(_input[index]))
+                foreach (string key in otherOperators)
                 {
-                    // if the character is an operator
+                    if (index + key.Length <= _input.Length)
+                    {
+                        string operatorString = _input.Substring(index, key.Length);
+                        if (String.Equals(operatorString, key))
+                        {
+                            // found a valid operator
+                            if (String.Equals(operatorString, "log_"))
+                            {
+                                workingTokenList.Add(new LogToken());
+                            }
+                            else if (String.Equals(operatorString, "ln"))
+                            {
+                                workingTokenList.Add(new NaturalLogToken());
+                            }
+                            index += operatorString.Length - 1;
+                            // start the next token
+                            tokenStart = index + 1;
+                        }
+                    }
+                }
+
+                if (singleOperators.Contains(_input[index]))
+                {
+                    // if the character is a single-character operator
 
                     // tokenise
                     switch (_input[index])
@@ -88,10 +117,20 @@ namespace calculator_gui
                             workingTokenList.Add(new NotToken()); break;
                         case '&':
                             workingTokenList.Add(new AndToken()); break;
-                        case '|':
+                        case '∨':
                             workingTokenList.Add(new OrToken()); break;
                         case '⊕':
                             workingTokenList.Add(new XorToken()); break;
+                        case '≪':
+                            workingTokenList.Add(new ShiftLeftToken()); break;
+                        case '≫':
+                            workingTokenList.Add(new ShiftRightToken()); break;
+                        case '|':
+                            workingTokenList.Add(new ModulusToken()); break;
+                        case '⫽':
+                            workingTokenList.Add(new IntDivisionToken()); break;
+                        case '%':
+                            workingTokenList.Add(new ModuloDivisionToken()); break;
                         default:
                             isValidExpression = false;
                             return;
@@ -114,10 +153,10 @@ namespace calculator_gui
                         hasDecimal = true;
                     }
                 }
-                if (Char.IsDigit(_input[index]) || _input[index] == '.')
+                if (Char.IsDigit(_input[index]) || (IsHexDigit(_input[index]) && CurrentBase == 16) || _input[index] == '.')
                 {
                     // if the character is a decimal point or a digit
-                    if (index == _input.Length - 1 || !(Char.IsDigit(_input[index + 1]) || (_input[index + 1] == '.')))
+                    if (index == _input.Length - 1 || !(Char.IsDigit(_input[index + 1]) || (IsHexDigit(_input[index + 1]) && CurrentBase == 16) || (_input[index + 1] == '.')))
                     {
                         // end of the number
                         // numbers cant end with a decimal point
@@ -133,15 +172,19 @@ namespace calculator_gui
                         float inputFloat;
                         if (!hasDecimal)
                         {
-                            long integer = Convert.ToInt64(inputSubstring, numberBase);
+                            long integer = Convert.ToInt64(inputSubstring, (int)CurrentBase);
                             inputFloat = (float)integer;
                         }
                         else
                         {
                             string[] splitString = inputSubstring.Split('.');
-                            int integerPart = Convert.ToInt32(splitString[0], numberBase);
-                            int nonIntPart = Convert.ToInt32(splitString[1], numberBase);
-                            inputFloat = (float)integerPart + (float)nonIntPart / (float)Math.Pow(numberBase, splitString[1].Length);
+                            if (String.IsNullOrEmpty(splitString[0]))
+                            {
+                                splitString[0] = "0";
+                            }
+                            int integerPart = Convert.ToInt32(splitString[0].Substring(0, Math.Min(splitString[0].Length,9)), (int)CurrentBase);
+                            int nonIntPart = Convert.ToInt32(splitString[1].Substring(0, Math.Min(splitString[1].Length, 9)), (int)CurrentBase);
+                            inputFloat = (float)integerPart + (float)nonIntPart / (float)Math.Pow(CurrentBase, splitString[1].Length);
                         }
                         workingTokenList.Add(new FloatToken(inputFloat));
 
@@ -149,6 +192,18 @@ namespace calculator_gui
                         tokenStart = index + 1;
                         hasDecimal = false;
                     }
+                }
+                else if (_input[index] == 'π')
+                {
+                    workingTokenList.Add(new PiToken());
+                    // start the next token
+                    tokenStart = index + 1;
+                }
+                else if (_input[index] == 'e')
+                {
+                    workingTokenList.Add(new EToken());
+                    // start the next token
+                    tokenStart = index + 1;
                 }
             }
             _tokenList = workingTokenList;
@@ -164,16 +219,38 @@ namespace calculator_gui
             int index = 0;
             while (index < correctedTokenList.Count)
             {
+                if (correctedTokenList[index] is ModulusToken)
+                {
+                    correctedTokenList.RemoveAt(index);
+                    correctedTokenList.Insert(index, new OpenModulusToken());
+
+                    // find the closing modulus
+                    for (int subIndex = correctedTokenList.Count - 1; subIndex > index; subIndex--)
+                    {
+                        if (correctedTokenList[subIndex] is ModulusToken)
+                        {
+                            correctedTokenList.RemoveAt(subIndex);
+                            correctedTokenList.Insert(subIndex, new CloseModulusToken());
+                            break;
+                        }
+                    }
+                }
+                index++;
+            }
+
+            index = 0;
+            while (index < correctedTokenList.Count)
+            {
                 if (correctedTokenList[index] is SubtractionToken)
                 {
-                    if (index == 0 || correctedTokenList[index - 1] is OperatorToken & !(correctedTokenList[index - 1] is CloseBracketToken))
+                    if (index == 0 || !(correctedTokenList[index - 1] is CloseBracketToken) && correctedTokenList[index - 1] is OperatorToken)
                     {
                         correctedTokenList.RemoveAt(index);
                         correctedTokenList.Insert(index, new MultiplicationToken());
                         correctedTokenList.Insert(index, new FloatToken(-1));
                     }
                 }
-                else if (correctedTokenList[index] is OpenBracketToken)
+                else if (correctedTokenList[index] is ConstantToken)
                 {
                     if (index != 0)
                     {
@@ -183,15 +260,106 @@ namespace calculator_gui
                             correctedTokenList.Insert(index++, new MultiplicationToken());
                         }
                     }
-                }
-                else if (correctedTokenList[index] is CloseBracketToken)
-                {
                     if (index != correctedTokenList.Count - 1)
                     {
                         if (correctedTokenList[index + 1] is OpenBracketToken || !(correctedTokenList[index + 1] is OperatorToken))
                         {
                             // insert a mult token after the close bracket
                             correctedTokenList.Insert(++index, new MultiplicationToken());
+                        }
+                    }
+                }
+                else if (correctedTokenList[index] is OpenBracketToken)
+                {
+                    if (index != 0)
+                    {
+                        bool logCase = false;
+                        if (index >= 2 && correctedTokenList[index - 1] is CloseBracketToken)
+                        {
+                            // loop back through until you find its associated open bracket
+                            int bracketCount = 1;
+                            int openBracketIndex = 0;
+                            for (int subIndex = index - 2; subIndex > 0; subIndex--)
+                            {
+                                if (correctedTokenList[subIndex] is CloseBracketToken)
+                                {
+                                    bracketCount++;
+                                }
+                                else if (correctedTokenList[subIndex] is OpenBracketToken)
+                                {
+                                    bracketCount--;
+                                    if (bracketCount == 0)
+                                    {
+                                        openBracketIndex = subIndex;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (openBracketIndex >= 1 && correctedTokenList[openBracketIndex - 1] is LogToken)
+                            {
+                                logCase = true;
+                            }
+                        }
+                        else if (index >= 2 && correctedTokenList[index - 2] is LogToken)
+                        {
+                            logCase = true;
+                        }
+
+                        if ((correctedTokenList[index - 1] is CloseBracketToken || !(correctedTokenList[index - 1] is OperatorToken)) && !logCase)
+                        {
+                            // insert a mult token before the open bracket
+                            correctedTokenList.Insert(index++, new MultiplicationToken());
+                        }
+                    }
+                }
+                else if (correctedTokenList[index] is CloseBracketToken)
+                {
+                    bool logCase = false;
+                    if (index >= 2)
+                    {
+                        // loop back through until you find its associated open bracket
+                        int bracketCount = 1;
+                        int openBracketIndex = 0;
+                        for (int subIndex = index - 1; subIndex > 0; subIndex--)
+                        {
+                            if (correctedTokenList[subIndex] is CloseBracketToken)
+                            {
+                                bracketCount++;
+                            }
+                            else if (correctedTokenList[subIndex] is OpenBracketToken)
+                            {
+                                bracketCount--;
+                                if (bracketCount == 0)
+                                {
+                                    // open bracket found
+                                    openBracketIndex = subIndex;
+                                    break;
+                                }
+                            }
+                        }
+                        if (openBracketIndex >= 1 && correctedTokenList[openBracketIndex - 1] is LogToken)
+                        {
+                            logCase = true;
+                        }
+                    }
+
+                    if (index != correctedTokenList.Count - 1)
+                    {
+                        if ((correctedTokenList[index + 1] is OpenBracketToken || !(correctedTokenList[index + 1] is OperatorToken)) && !logCase)
+                        {
+                            // insert a mult token after the close bracket
+                            correctedTokenList.Insert(++index, new MultiplicationToken());
+                        }
+                    }
+                }
+                else if (correctedTokenList[index] is OperatorToken && ((OperatorToken)(correctedTokenList[index])).argumentCount == 1)
+                {
+                    if (index != 0)
+                    {
+                        if (correctedTokenList[index - 1] is CloseBracketToken || !(correctedTokenList[index - 1] is OperatorToken))
+                        {
+                            // insert a mult token before the unary operator
+                            correctedTokenList.Insert(index++, new MultiplicationToken());
                         }
                     }
                 }
@@ -203,7 +371,7 @@ namespace calculator_gui
         private void ShuntingYard()
         {
             expression = new Queue<Token>();
-            Stack<Token> operatorStack = new Stack<Token>();
+            Stack<OperatorToken> operatorStack = new Stack<OperatorToken>();
 
             foreach (Token token in correctedTokenList)
             {
@@ -212,24 +380,37 @@ namespace calculator_gui
                     // enqueue any floats to the queue
                     expression.Enqueue(token);
                 }
-                else if (token is CloseBracketToken)
+                else if (token is CloseBracketToken || token is CloseModulusToken)
                 {
-                    // enqueue operators from the stack to the queue until an open bracket is reached
-                    bool reachedOpenBracket = false;
-                    while (!reachedOpenBracket)
+                    // enqueue operators from the stack to the queue until the open token is reached
+                    bool reachedOpenToken = false;
+                    while (!reachedOpenToken)
                     {
-                        Token opToken = operatorStack.Pop();
-                        if (opToken is OpenBracketToken)
+                        if (operatorStack.Count == 0)
                         {
-                            reachedOpenBracket = true;
+                            isValidExpression = false;
+                            return;
+                        }
+                        Token opToken = operatorStack.Pop();
+                        if (token is CloseBracketToken && opToken is OpenBracketToken || token is CloseModulusToken && opToken is OpenModulusToken)
+                        {
+                            reachedOpenToken = true;
                         }
                         else
                         {
                             expression.Enqueue(opToken);
                         }
                     }
+                    if (token is CloseModulusToken)
+                    {
+                        expression.Enqueue(new ModulusToken());
+                    }
                 }
-                else if (!(token is OpenBracketToken))
+                else if (token is OpenBracketToken || token is OpenModulusToken)
+                {
+                    operatorStack.Push((OperatorToken)token);
+                }
+                else
                 {
                     // enqueue operators from the stack to the queue until the stack's precedence is equal
                     bool shouldPop = true;
@@ -244,18 +425,20 @@ namespace calculator_gui
                             shouldPop = false;
                         }
                     }
-                    operatorStack.Push(token);
-                }
-                else
-                {
-                    operatorStack.Push(token);
+                    operatorStack.Push((OperatorToken)token);
                 }
             }
 
             // clear the remains of the operator stack
             while (operatorStack.Count > 0)
             {
-                expression.Enqueue(operatorStack.Pop());
+                OperatorToken token = operatorStack.Pop();
+                if (token is OpenBracketToken)
+                {
+                    isValidExpression = false;
+                    return;
+                }
+                expression.Enqueue(token);
             }
 
             if (expression.Count > 1)
@@ -272,7 +455,7 @@ namespace calculator_gui
                 if (expression.Peek() is OperatorToken)
                 {
                     OperatorToken opToken = (OperatorToken)expression.Dequeue();
-                    if (workingStack.Count < 2)
+                    if (workingStack.Count < opToken.argumentCount)
                     {
                         isValidExpression = false;
                         return 0f;
@@ -311,9 +494,13 @@ namespace calculator_gui
                 {
                     output += token.ToString();
                 }
+                else if (token is ConstantToken)
+                {
+                    output += ((ConstantToken)token).ToString();
+                }
                 else
                 {
-                    output += ((FloatToken)token).ToString(numberBase);
+                    output += ((FloatToken)token).ToString((int)CurrentBase);
                 }
             }
             return output;
@@ -328,12 +515,31 @@ namespace calculator_gui
                 {
                     output += token.ToString();
                 }
+                else if (token is PiToken)
+                {
+                    output += ((PiToken)token).ToString();
+                }
                 else
                 {
                     output += ((FloatToken)token).ToString(newBase);
                 }
             }
             return output;
+        }
+
+        public bool IsHexDigit(char character)
+        {
+            if (Char.IsDigit(character) || 
+                character == 'A' || character == 'a' ||
+                character == 'B' || character == 'b' ||
+                character == 'C' || character == 'c' ||
+                character == 'D' || character == 'd' ||
+                character == 'E' || character == 'e' ||
+                character == 'F' || character == 'f')
+            {
+                return true;
+            }
+            return false;
         }
     }
 
@@ -359,13 +565,19 @@ namespace calculator_gui
         public string ToString(int newBase)
         {
             string output = "";
-            int integerPart = (int)value;
+            double workingValue = value;
+            if (value < 0)
+            {
+                workingValue *= -1;
+                output += "-";
+            }
+            int integerPart = (int)workingValue;
             output += Convert.ToString(integerPart, newBase).ToUpper();
-            if ((float)integerPart != value)
+            if ((float)integerPart != workingValue)
             {
                 output += ".";
             }
-            double decimalPart = (double)value - (double)(int)(value);
+            double decimalPart = (double)workingValue - (double)(int)(workingValue);
             int maxIterations = 5;
             int iteration = 0;
             while (decimalPart > Single.Epsilon && iteration < maxIterations)
@@ -379,6 +591,37 @@ namespace calculator_gui
             return output;
         }
     }
+
+    public abstract class ConstantToken : FloatToken
+    {
+        private string symbol;
+        public ConstantToken(double value, string newSymbol) : base(value)
+        {
+            symbol = newSymbol;
+        }
+
+        public override string ToString()
+        {
+            return symbol;
+        }
+    }
+
+    public class PiToken : ConstantToken
+    {
+        public PiToken() : base(Math.PI, "π")
+        {
+
+        }
+    }
+
+    public class EToken : ConstantToken
+    {
+        public EToken() : base(Math.E, "e")
+        {
+
+        }
+    }
+
 
     public abstract class OperatorToken : Token
     {
@@ -468,7 +711,7 @@ namespace calculator_gui
         }
         public override double Operate(double value1, double value2)
         {
-            return (float)Math.Pow(value1, value2);
+            return Math.Pow(value1, value2);
         }
 
         public override string ToString()
@@ -515,6 +758,51 @@ namespace calculator_gui
         }
     }
 
+    public class ModulusToken : OperatorToken
+    {
+        public ModulusToken()
+        {
+            precedence = 1;
+            argumentCount = 1;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return Math.Abs(value1);
+        }
+
+        public override string ToString()
+        {
+            return "|";
+        }
+    }
+
+    public class OpenModulusToken : OpenBracketToken
+    {
+        public OpenModulusToken() : base()
+        {
+
+        }
+
+        public override string ToString()
+        {
+            return "[";
+        }
+    }
+
+    public class CloseModulusToken : CloseBracketToken
+    {
+        public CloseModulusToken() : base()
+        {
+
+        }
+
+        public override string ToString()
+        {
+            return "]";
+        }
+    }
+
     public class NotToken : OperatorToken
     {
         public NotToken()
@@ -525,7 +813,12 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)(~((int)value1));
+            return (double)(~((int)value1));
+        }
+
+        public override string ToString()
+        {
+            return " ~";
         }
     }
 
@@ -539,7 +832,12 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)((int)value1 & (int)value2);
+            return (double)((int)value1 & (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return "&";
         }
     }
 
@@ -553,7 +851,12 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)((int)value1 | (int)value2);
+            return (double)((int)value1 | (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " ∨ ";
         }
     }
 
@@ -567,7 +870,12 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)((int)value1 ^ (int)value2);
+            return (double)((int)value1 ^ (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " ⊕ ";
         }
     }
 
@@ -581,7 +889,12 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)((int)value1 << (int)value2);
+            return (double)((int)value1 << (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " ≪ ";
         }
     }
 
@@ -595,7 +908,88 @@ namespace calculator_gui
 
         public override double Operate(double value1, double value2)
         {
-            return (float)((int)value1 >> (int)value2);
+            return (double)((int)value1 >> (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " ≫ ";
+        }
+    }
+
+    public class IntDivisionToken : OperatorToken
+    {
+        public IntDivisionToken()
+        {
+            precedence = 3;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (double)((int)value1 / (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " ⫽ ";
+        }
+    }
+
+    public class ModuloDivisionToken : OperatorToken
+    {
+        public ModuloDivisionToken()
+        {
+            precedence = 3;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return (double)((int)value1 % (int)value2);
+        }
+
+        public override string ToString()
+        {
+            return " % ";
+        }
+    }
+
+    public class LogToken : OperatorToken
+    {
+        public LogToken()
+        {
+            precedence = 2;
+            argumentCount = 2;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return Math.Log(value2, value1);
+        }
+
+        public override string ToString()
+        {
+            return "log_";
+        }
+    }
+
+    public class NaturalLogToken : OperatorToken
+    {
+        public NaturalLogToken()
+        {
+            precedence = 2;
+            argumentCount = 1;
+        }
+
+        public override double Operate(double value1, double value2)
+        {
+            return Math.Log(value1, Math.E);
+        }
+
+        public override string ToString()
+        {
+            return "ln ";
         }
     }
 }

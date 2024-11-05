@@ -18,10 +18,10 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Margin="5,5,5,-5" Style="{DynamicResource Border}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewer}">
-                <StackPanel>
+            <ScrollViewer Name="HistoryScrollViewer" VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewer}">
+                <StackPanel Name="History">
                     <Viewbox HorizontalAlignment="Left" Margin="5" MaxHeight="40">
-                        
+
                     </Viewbox>
                 </StackPanel>
             </ScrollViewer>
@@ -29,7 +29,7 @@
 
         <Border Grid.Row="1" Margin="5,0,5,5" Style="{DynamicResource Border}">
             <Viewbox HorizontalAlignment="Left" Margin="5">
-                <TextBox Name="OutputTextBox" Style="{DynamicResource TextBox}" />
+                <TextBlock Name="OutputTextBlock" Style="{DynamicResource ImportantTextBlock}" />
             </Viewbox>
         </Border>
 
@@ -211,7 +211,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <Button Name="Button7" Grid.Row="0" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="7" Click="AppendDigit">
+                <Button Name="Button7" Grid.Row="0" Grid.Column="0" Margin="2" Style="{DynamicResource Button}" Tag="7" Click="AppendDigit" Focusable="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">7</TextBlock>
                     </Viewbox>
@@ -226,7 +226,7 @@
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">9</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonF" Grid.Row="0" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="F" Click="AppendDigit">
+                <Button Name="ButtonF" Grid.Row="0" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="F" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">F</TextBlock>
                     </Viewbox>
@@ -246,7 +246,7 @@
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">6</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonE" Grid.Row="1" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="E" Click="AppendDigit">
+                <Button Name="ButtonE" Grid.Row="1" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="E" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">E</TextBlock>
                     </Viewbox>
@@ -266,7 +266,7 @@
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">3</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonD" Grid.Row="2" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="D" Click="AppendDigit">
+                <Button Name="ButtonD" Grid.Row="2" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="D" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">D</TextBlock>
                     </Viewbox>
@@ -276,17 +276,17 @@
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">0</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonA" Grid.Row="3" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="A" Click="AppendDigit">
+                <Button Name="ButtonA" Grid.Row="3" Grid.Column="1" Margin="2" Style="{DynamicResource Button}" Tag="A" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">A</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonB" Grid.Row="3" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="B" Click="AppendDigit">
+                <Button Name="ButtonB" Grid.Row="3" Grid.Column="2" Margin="2" Style="{DynamicResource Button}" Tag="B" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">B</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Name="ButtonC" Grid.Row="3" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="C" Click="AppendDigit">
+                <Button Name="ButtonC" Grid.Row="3" Grid.Column="3" Margin="2" Style="{DynamicResource Button}" Tag="C" Click="AppendDigit" IsEnabled="False">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">C</TextBlock>
                     </Viewbox>
@@ -333,64 +333,64 @@
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">𝑥ʸ</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="2" Grid.Column="5" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="2" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="ButtonNegate_Pressed">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">±</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="2" Grid.Column="6" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="2" Grid.Column="6" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="|">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">|𝑥|</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="3" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=".">
+                <Button Grid.Row="3" Grid.Column="5" Margin="2" Style="{DynamicResource Button}" Click="AppendDecimal">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">.</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="3" Grid.Column="6" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="3" Grid.Column="6" Margin="2" Style="{DynamicResource Button}" Click="ButtonPi_Pressed">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">π</TextBlock>
                     </Viewbox>
                 </Button>
 
-                <Button Grid.Row="0" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="0" Grid.Column="7" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ≪ ">
                     <Viewbox>
-                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">&lt;&lt;</TextBlock>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">≪</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="0" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="0" Grid.Column="8" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ≫ ">
                     <Viewbox>
-                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">&gt;&gt;</TextBlock>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">≫</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="1" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="1" Grid.Column="7" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" &amp; ">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">AND</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="1" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="1" Grid.Column="8" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ∨ ">
                     <Viewbox>
                         <TextBlock Margin="5,2,5,2" Style="{DynamicResource StandardTextBlock}">OR</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="2" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="2" Grid.Column="7" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ⊕ ">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">XOR</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="2" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="2" Grid.Column="8" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ~">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">NOT</TextBlock>
                     </Viewbox>
                 </Button>
 
-                <Button Grid.Row="3" Grid.Column="7" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="3" Grid.Column="7" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" ⫽ ">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">DIV</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="3" Grid.Column="8" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="3" Grid.Column="8" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" % ">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">MOD</TextBlock>
                     </Viewbox>
@@ -407,29 +407,29 @@
                     </Viewbox>
                 </Button>
 
-                <Button Grid.Row="1" Grid.Column="9" Margin="2" Style="{DynamicResource Button}" Click="MoveCursorLeft">
+                <Button Grid.Row="1" Grid.Column="9" Margin="2" Style="{DynamicResource Button}" Click="ButtonE_Pressed">
                     <Viewbox>
-                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">←</TextBlock>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">e</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="1" Grid.Column="10" Margin="2" Style="{DynamicResource Button}" Click="MoveCursorRight">
+                <Button Grid.Row="1" Grid.Column="10" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="ln ">
                     <Viewbox>
-                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">→</TextBlock>
+                        <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">ln</TextBlock>
                     </Viewbox>
                 </Button>
 
-                <Button Grid.Row="2" Grid.Column="9" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="2" Grid.Column="9" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag="log_(2)(">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">log₂</TextBlock>
                     </Viewbox>
                 </Button>
-                <Button Grid.Row="3" Grid.Column="9" Margin="2" Style="{DynamicResource Button}">
+                <Button Grid.Row="3" Grid.Column="9" Margin="2" Style="{DynamicResource Button}" Click="AppendOperator" Tag=" * (2 ^ (">
                     <Viewbox>
                         <TextBlock Margin="2" Style="{DynamicResource StandardTextBlock}">×2ˣ</TextBlock>
                     </Viewbox>
                 </Button>
 
-                <Button Grid.Row="2" Grid.Column="10" Grid.RowSpan="2" Margin="2" Style="{DynamicResource AccentButton}">
+                <Button Grid.Row="2" Grid.Column="10" Grid.RowSpan="2" Margin="2" Style="{DynamicResource AccentButton}" Click="ButtonEquals_Pressed">
                     <Viewbox>
                         <TextBlock Margin="2,2,2,5" Style="{DynamicResource AccentTextBlock}">=</TextBlock>
                     </Viewbox>
@@ -440,25 +440,27 @@
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="110"/>
-                <ColumnDefinition Width="110"/>
-                <ColumnDefinition/>
+                <ColumnDefinition MinWidth="20" MaxWidth="110"/>
+                <ColumnDefinition MinWidth="20" MaxWidth="110"/>
+                <ColumnDefinition MinWidth="20" MaxWidth="110"/>
+                <ColumnDefinition MinWidth="20"/>
             </Grid.ColumnDefinitions>
-            <Viewbox Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
-                <TextBlock Name="ConversionPreview" Style="{DynamicResource ImportantTextBlock}" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10">10</TextBlock>
+            <Viewbox Grid.Column="3" HorizontalAlignment="Right" MinWidth="50">
+                <TextBlock Name="BaseReadout" Style="{DynamicResource ImportantTextBlock}" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10">0₈ = 0₁₀ = 0₁₆</TextBlock>
             </Viewbox>
-            <ComboBox Name="BaseSelector" Grid.Column="0" Style="{DynamicResource ComboBox}" Margin="5" Width="100" HorizontalAlignment="Left" SelectionChanged="BaseChanged">
+            <ComboBox Name="BaseSelector" Grid.Column="0" Style="{DynamicResource ComboBox}" Margin="5" HorizontalAlignment="Stretch" SelectionChanged="BaseChanged">
                 <ComboBoxItem Content="Binary"/>
                 <ComboBoxItem Content="Octal"/>
                 <ComboBoxItem IsSelected="True" Content="Decimal"/>
                 <ComboBoxItem Content="Hexadecimal"/>
             </ComboBox>
-            <ComboBox Name="WordSize" Grid.Column="1" Style="{DynamicResource ComboBox}" Margin="5" Width="100" HorizontalAlignment="Left" SelectionChanged="WordSizeChanged">
+            <ComboBox Name="WordSize" Grid.Column="1" Style="{DynamicResource ComboBox}" Margin="5" HorizontalAlignment="Stretch" SelectionChanged="WordSizeChanged">
                 <ComboBoxItem Content="8-bit"/>
                 <ComboBoxItem Content="16-bit"/>
                 <ComboBoxItem Content="32-bit"/>
                 <ComboBoxItem IsSelected="True" Content="64-bit"/>
             </ComboBox>
+            <Button Grid.Column="2" Style="{DynamicResource ImportantButton}" Margin="5" HorizontalAlignment="Stretch" Click="ClearHistory">Clear History</Button>
         </Grid>
     </Grid>
 </Page>
