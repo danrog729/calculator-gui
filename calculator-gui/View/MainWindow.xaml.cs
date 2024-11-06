@@ -70,12 +70,10 @@ namespace calculator_gui
             if (WindowState == WindowState.Maximized)
             {
                 SystemCommands.RestoreWindow(this);
-                MaximiseButton.Content = "1"; // maximise in webdings
             }
             else
             {
                 SystemCommands.MaximizeWindow(this);
-                MaximiseButton.Content = "2"; // un-maximise in webdings
             }
         }
 
@@ -87,6 +85,20 @@ namespace calculator_gui
         public void TitleBar_Dragged(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
+        }
+
+        public void WindowSize_Changed(object sender, SizeChangedEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                BorderThickness = new Thickness(8);
+                MaximiseButton.Content = "2"; // un-maximise in webdings
+            }
+            else
+            {
+                BorderThickness = new Thickness(0);
+                MaximiseButton.Content = "1"; // maximise in webdings
+            }
         }
     }
 }

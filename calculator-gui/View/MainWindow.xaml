@@ -9,7 +9,8 @@
         MinHeight="270" MinWidth="225"
         Background="{DynamicResource Background}"
         WindowStyle="SingleBorderWindow"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        SizeChanged="WindowSize_Changed">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="0"

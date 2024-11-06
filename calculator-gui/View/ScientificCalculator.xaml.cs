@@ -20,9 +20,22 @@ namespace calculator_gui
     /// </summary>
     public partial class ScientificCalculator : Page
     {
+        Graph grapher;
         public ScientificCalculator()
         {
             InitializeComponent();
+            grapher = new Graph(ref OutputCanvas);
+        }
+
+        public void CanvasSize_Changed(object sender, SizeChangedEventArgs e)
+        {
+            grapher.SizeChanged((int)e.NewSize.Width, (int)e.NewSize.Height);
+        }
+
+        public void CanvasZoom(object sender, MouseWheelEventArgs e)
+        {
+            Point zoomPoint = e.GetPosition(OutputCanvas);
+            grapher.Zoom((int)zoomPoint.X, (int)zoomPoint.Y, e.Delta);
         }
     }
 }

@@ -225,8 +225,7 @@ namespace calculator_gui
                 if (calculator.TokenList.Count > 0 && calculator.TokenList[calculator.TokenList.Count - 1] is FloatToken floatToken)
                 {
                     double candidate = floatToken.value * CurrentBase + Convert.ToInt64((string)((Button)sender).Tag, 16);
-                    long bitMask = (long)Math.Pow(2, _currentWordSize) - 1;
-                    if (((long)candidate & bitMask) != candidate)
+                    if (candidate >= Math.Pow(2, _currentWordSize))
                     {
                         return;
                     }

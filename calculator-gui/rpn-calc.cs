@@ -576,17 +576,22 @@ namespace calculator_gui
             if ((float)integerPart != workingValue)
             {
                 output += ".";
-            }
-            double decimalPart = (double)workingValue - (double)(int)(workingValue);
-            int maxIterations = 5;
-            int iteration = 0;
-            while (decimalPart > Single.Epsilon && iteration < maxIterations)
-            {
-                int bitToRemove = (int)(decimalPart / Math.Pow(newBase, -1));
-                output += Convert.ToString(bitToRemove, newBase).ToUpper();
-                decimalPart -= bitToRemove * (float)Math.Pow(newBase, -1);
-                decimalPart *= newBase;
-                iteration++;
+                double decimalPart = (double)workingValue - (double)(int)(workingValue);
+                int maxIterations = 5;
+                int iteration = 0;
+                double epsilon = Math.Pow(newBase, -maxIterations);
+                while (iteration < maxIterations)
+                {
+                    int bitToRemove = (int)(decimalPart / Math.Pow(newBase, -1));
+                    output += Convert.ToString(bitToRemove, newBase).ToUpper();
+                    decimalPart -= bitToRemove * (float)Math.Pow(newBase, -1);
+                    if (decimalPart <= epsilon)
+                    {
+                        break;
+                    }
+                    decimalPart *= newBase;
+                    iteration++;
+                }
             }
             return output;
         }
@@ -837,7 +842,7 @@ namespace calculator_gui
 
         public override string ToString()
         {
-            return "&";
+            return " & ";
         }
     }
 
