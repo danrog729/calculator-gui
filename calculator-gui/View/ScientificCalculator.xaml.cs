@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace calculator_gui
 {
@@ -21,6 +22,12 @@ namespace calculator_gui
     public partial class ScientificCalculator : Page
     {
         Graph grapher;
+
+        bool mouseWasDown;
+        int lastMouseX;
+        int lastMouseY;
+        Point mousePos;
+
         public ScientificCalculator()
         {
             InitializeComponent();
@@ -34,8 +41,41 @@ namespace calculator_gui
 
         public void CanvasZoom(object sender, MouseWheelEventArgs e)
         {
-            Point zoomPoint = e.GetPosition(OutputCanvas);
-            grapher.Zoom((int)zoomPoint.X, (int)zoomPoint.Y, e.Delta);
+            mousePos = e.GetPosition(OutputCanvas);
+            grapher.Zoom((int)mousePos.X, (int)mousePos.Y, e.Delta);
+        }
+
+        public void CanvasMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            mousePos = e.GetPosition(OutputCanvas);
+            lastMouseX = (int)mousePos.X;
+            lastMouseY = (int)mousePos.Y;
+            mouseWasDown = true;
+        }
+
+        public void CanvasMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                mousePos = e.GetPosition(OutputCanvas);
+                if (!mouseWasDown)
+                {
+                    lastMouseX = (int)mousePos.X;
+                    lastMouseY = (int)mousePos.Y;
+                    mouseWasDown = true;
+                }
+                int deltaX = (int)mousePos.X - lastMouseX;
+                int deltaY = (int)mousePos.Y - lastMouseY;
+
+                grapher.Pan(deltaX, deltaY);
+
+                lastMouseX = (int)mousePos.X;
+                lastMouseY = (int)mousePos.Y;
+            }
+            else
+            {
+                mouseWasDown = false;
+            }
         }
     }
 }
