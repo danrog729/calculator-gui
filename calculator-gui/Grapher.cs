@@ -214,6 +214,15 @@ namespace calculator_gui
             }
         }
 
+        private void DrawRealBorder(int minX, int maxX, int minY, int maxY, ref SolidColorBrush border, ref SolidColorBrush fill)
+        {
+            Border newBorder = new Border();
+            newBorder.Width = maxX - minX;
+            newBorder.Height = maxY - minY;
+            newBorder.BorderBrush = border;
+            newBorder.Background = fill;
+        }
+
         private void DrawVirtualLabel(float x, float y, int realOffsetX, int realOffsetY, string text, ref SolidColorBrush colour)
         {
             TextBlock textBlock = new TextBlock();
