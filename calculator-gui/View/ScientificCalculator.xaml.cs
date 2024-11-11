@@ -77,5 +77,10 @@ namespace calculator_gui
                 mouseWasDown = false;
             }
         }
+
+        public void EquationTextChanged(object sender, EventArgs e)
+        {
+            grapher.NewEquation(Equation.Text);
+        }
     }
 }

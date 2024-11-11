@@ -35,9 +35,14 @@ namespace calculator_gui
         public SolidColorBrush majorGridColour;
         public SolidColorBrush minorGridColour;
         public SolidColorBrush transparent = new SolidColorBrush(Colors.Transparent);
-        public SolidColorBrush BSPLine;
+        public SolidColorBrush BSPLineInvalid;
+        public SolidColorBrush BSPLineValid;
 
         private Canvas canvas;
+        private FreeformCalculator calculator;
+
+        BSPNode bspRoot;
+        private int maxDepth = 5;
 
         public Graph(ref Canvas newCanvas)
         {
@@ -52,7 +57,11 @@ namespace calculator_gui
             axesLabelsOutOfRange = new SolidColorBrush() { Color = Color.FromRgb(128,128, 128) };
             majorGridColour = new SolidColorBrush() { Color = Color.FromRgb(192, 192, 192) };
             minorGridColour = new SolidColorBrush() { Color = Color.FromRgb(224, 224, 224) };
-            BSPLine = new SolidColorBrush() { Color = Color.FromRgb(255, 0, 0) };
+            BSPLineInvalid = new SolidColorBrush() { Color = Color.FromRgb(255, 0, 0) };
+            BSPLineValid = new SolidColorBrush() { Color = Color.FromRgb(0, 255, 0) };
+
+            calculator = new FreeformCalculator();
+            calculator.Input = "";
         }
 
         public void SizeChanged(int newWidth, int newHeight)
@@ -187,15 +196,27 @@ namespace calculator_gui
             UpdateFrame();
         }
 
+        public void NewEquation(string equation)
+        {
+            calculator.Input = equation;
+            UpdateFrame();
+        }
+
         private void UpdateFrame()
         {
             canvas.Children.Clear();
             DrawAxes();
-            if (App.MainApp.viewGraphBSP)
+            if (calculator.isValidExpression)
             {
-                DrawRealBorder(10, 10, 100, 100, ref BSPLine, ref transparent);
+                bspRoot = BSP();
+                if (App.MainApp.viewGraphBSP)
+                {
+                    DrawBSP(bspRoot);
+                }
             }
         }
+
+
 
         private void DrawAxes()
         {
@@ -414,5 +435,106 @@ namespace calculator_gui
             return (int)((1 - (y - minY) / (maxY - minY)) * pixelHeight);
         }
 
+        private void DrawBSPNode(ref BSPNode node)
+        {
+            int realXMin = RealiseX(node.xMin);
+            int realXMax = RealiseX(node.xMax);
+            int realYMin = RealiseY(node.yMin);
+            int realYMax = RealiseY(node.yMax);
+            if (node.containsGraph)
+            {
+                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, ref transparent);
+            }
+            else
+            {
+                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, ref transparent);
+            }
+        }
+
+        private BSPNode BSP()
+        {
+            BSPNode root = new BSPNode() { xMin = minX, xMax = maxX, yMin = minY, yMax = maxY, containsGraph = false };
+            if (calculator.InsideBounds((root.xMin, root.xMax), (root.yMin, root.yMax)))
+            {
+                root.containsGraph = true;
+                if (maxDepth != 0)
+                {
+                    BSPDescend(root, 1);
+                }
+            }
+            return root;
+        }
+
+        private void BSPDescend(BSPNode root, int depth)
+        {
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            foreach (BSPNode child in root.children)
+            {
+                if (calculator.InsideBounds((child.xMin, child.xMax), (child.yMin, child.yMax)))
+                {
+                    child.containsGraph = true;
+                }
+            }
+            foreach (BSPNode child in root.children)
+            {
+                if (child.containsGraph)
+                {
+                    if (depth < maxDepth)
+                    {
+                        BSPDescend(child, depth + 1);
+                    }
+                }
+            }
+        }
+
+        private void DrawBSP(BSPNode root)
+        {
+            DrawBSPNode(ref root);
+            for (int index = 0; index < root.children.Count; index++)
+            {
+                DrawBSP(root.children[index]);
+            }
+        }
+    }
+
+    internal class BSPNode
+    {
+        public float xMin;
+        public float xMax;
+        public float yMin;
+        public float yMax;
+        public bool containsGraph = true;
+        public List<BSPNode> children = new List<BSPNode>();
     }
 }

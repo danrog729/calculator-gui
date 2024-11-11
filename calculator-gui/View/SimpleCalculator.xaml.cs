@@ -92,7 +92,7 @@ namespace calculator_gui
             if (!String.IsNullOrEmpty(TextBlock_CalcOutput.Text))
             {
                 FreeformCalculator calculator = new FreeformCalculator() { Input = TextBlock_CalcOutput.Text };
-                double output = calculator.Evaluate();
+                double output = ((FloatToken)calculator.Evaluate()).value;
                 if (!calculator.isValidExpression)
                 {
                     TextBlock_CalcOutput.Text = "Syntax error";

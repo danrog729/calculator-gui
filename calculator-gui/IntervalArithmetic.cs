@@ -243,6 +243,11 @@ namespace calculator_gui
             Intervals.Add(new Interval(0, 0));
         }
 
+        public MultiInterval(Interval interval)
+        {
+            Intervals.Add(interval);
+        }
+
         public List<double> GetBoundaries()
         {
             List<double> output = new List<double>();
@@ -271,6 +276,20 @@ namespace calculator_gui
             return false;
         }
 
+        public override string ToString()
+        {
+            string output = "";
+            for (int index = 0; index < Intervals.Count; index++)
+            {
+                output += Intervals[index].ToString();
+                if (index !=  Intervals.Count - 1)
+                {
+                    output += " U ";
+                }
+            }
+            return output;
+        }
+
         public static List<int> GetOverlaps(MultiInterval a, MultiInterval b)
         {
             List<int> output = new List<int>();
@@ -284,6 +303,7 @@ namespace calculator_gui
             {
                 if (aList[aIndex] <= bList[bIndex])
                 {
+                    aIndex++;
                     if (aOverlapping)
                     {
                         aOverlapping = false;
@@ -295,6 +315,7 @@ namespace calculator_gui
                 }
                 else
                 {
+                    bIndex++;
                     if (bOverlapping)
                     {
                         bOverlapping = false;
@@ -331,6 +352,7 @@ namespace calculator_gui
                         bOverlapping = true;
                         output.Add(1);
                     }
+                    bIndex++;
                 }
             }
             else if (bIndex == bList.Count)
@@ -347,6 +369,7 @@ namespace calculator_gui
                         aOverlapping = true;
                         output.Add(1);
                     }
+                    aIndex++;
                 }
             }
             return output;
@@ -364,10 +387,12 @@ namespace calculator_gui
                 if (aList[aIndex] <= bList[bIndex])
                 {
                     output.Add(aList[aIndex]);
+                    aIndex++;
                 }
                 else
                 {
                     output.Add(bList[bIndex]);
+                    bIndex++;
                 }
             }
             if (aIndex == aList.Count)
@@ -375,6 +400,7 @@ namespace calculator_gui
                 while (bIndex < bList.Count)
                 {
                     output.Add(bList[bIndex]);
+                    bIndex++;
                 }
             }
             else if (bIndex == bList.Count)
@@ -382,6 +408,7 @@ namespace calculator_gui
                 while (aIndex < aList.Count)
                 {
                     output.Add(aList[aIndex]);
+                    aIndex++;
                 }
             }
             return output;
@@ -390,6 +417,7 @@ namespace calculator_gui
         public static MultiInterval Exponentiation(MultiInterval a, MultiInterval b)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 foreach (Interval bInterval in b.Intervals)
@@ -531,6 +559,7 @@ namespace calculator_gui
         public static MultiInterval operator +(MultiInterval a, MultiInterval b)
         {
             MultiInterval result = new MultiInterval();
+            result.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 foreach (Interval bInterval in b.Intervals)
@@ -543,6 +572,7 @@ namespace calculator_gui
         public static MultiInterval operator -(MultiInterval a, MultiInterval b)
         {
             MultiInterval result = new MultiInterval();
+            result.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 foreach (Interval bInterval in b.Intervals)
@@ -555,6 +585,7 @@ namespace calculator_gui
         public static MultiInterval operator *(MultiInterval a, MultiInterval b)
         {
             MultiInterval result = new MultiInterval();
+            result.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 foreach (Interval bInterval in b.Intervals)
@@ -626,15 +657,19 @@ namespace calculator_gui
             List<double> outputBoundaries = new List<double>();
             List<int> overlaps = MultiInterval.GetOverlaps(a, b);
             List<double> list = MultiInterval.GetOverlapBoundaries(a, b);
+            if (overlaps.Count > 0 && overlaps[0] >= 1)
+            {
+                outputBoundaries.Add(list[0]);
+            }
             for (int overlapIndex = 1; overlapIndex < overlaps.Count; overlapIndex++)
             {
-                if (overlaps[overlapIndex] >= 1)
+                if (overlaps[overlapIndex] >= 1 && overlaps[overlapIndex - 1] == 0)
                 {
                     outputBoundaries.Add(list[overlapIndex - 1]);
                 }
-                else if (overlaps[overlapIndex - 1] >= 1)
+                else if (overlaps[overlapIndex] == 0 && overlaps[overlapIndex - 1] >= 1)
                 {
-                    outputBoundaries.Add(list[overlapIndex - 1]);
+                    outputBoundaries.Add(list[overlapIndex]);
                 }
             }
             if (outputBoundaries.Count >= 2 && outputBoundaries[0] == outputBoundaries[1])
@@ -649,7 +684,8 @@ namespace calculator_gui
             }
 
             MultiInterval output = new MultiInterval();
-            for (int index = 0; index < outputBoundaries.Count; index += 2)
+            output.Intervals.Clear();
+            for (int index = 0; index < outputBoundaries.Count - 1; index += 2)
             {
                 output.Intervals.Add(new Interval(outputBoundaries[index], outputBoundaries[index + 1]));
             }
@@ -693,6 +729,7 @@ namespace calculator_gui
         public static implicit operator MultiInterval(Interval interval)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             output.Intervals.Add(interval);
             return output;
         }

@@ -33,7 +33,7 @@
                             <Ellipse Width="16" Height="16" Stroke="{DynamicResource BorderColour}" StrokeThickness="1" Margin="2" Fill="Black"/>
                         </Button>
                         <Rectangle Width="1" Fill="{DynamicResource BorderColour}"/>
-                        <TextBlock Name="equation" Grid.Column="1" Margin="10" Style="{DynamicResource StandardTextBlock}">y=sinx</TextBlock>
+                        <TextBox Name="Equation" Grid.Column="1" Margin="10" MinWidth="100" Style="{DynamicResource TextBox}" TextChanged="EquationTextChanged"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

@@ -341,7 +341,7 @@ namespace calculator_gui
             if (calculator.Input.Length > 0)
             {
                 string oldExpression = calculator.ToString();
-                double output = calculator.Evaluate();
+                double output = ((FloatToken)calculator.Evaluate()).value;
                 if (calculator.isValidExpression)
                 {
                     calculator.Input = (new FloatToken(output % Math.Pow(2, _currentWordSize))).ToString((int)_currentBase);
