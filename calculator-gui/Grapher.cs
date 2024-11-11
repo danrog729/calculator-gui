@@ -204,6 +204,7 @@ namespace calculator_gui
 
         private void UpdateFrame()
         {
+            maxDepth = App.MainApp.maxBSPDepth;
             canvas.Children.Clear();
             DrawAxes();
             if (calculator.isValidExpression)

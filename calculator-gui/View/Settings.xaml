@@ -69,6 +69,17 @@
                     <CheckBox Name="ViewGraphBSP" Grid.Column="1" Margin="10" Checked="GraphBSPChanged" Unchecked="GraphBSPChanged"/>
                 </Grid>
 
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">BSP Max Depth</TextBlock>
+                    <Border Grid.Column="1" Margin="10" Style="{DynamicResource Border}">
+                        <TextBox Name="BSPMaxDepth" Style="{DynamicResource TextBox}" TextChanged="MaxBSPDepthChanged">5</TextBox>
+                    </Border>
+                </Grid>
+
             </StackPanel>
         </Border>
     </Grid>

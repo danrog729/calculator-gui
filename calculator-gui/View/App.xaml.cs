@@ -38,6 +38,7 @@ namespace calculator_gui
 
         public int angleType; // 0=degrees, 1=radians
         public bool viewGraphBSP; // shows the lines of the quadtree
+        public int maxBSPDepth;
 
         public App()
         {

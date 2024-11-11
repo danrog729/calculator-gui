@@ -28,6 +28,7 @@ namespace calculator_gui
                 ThemeSelector.Items.Add(new ComboBoxItem() { Content=theme.Name });
             }
             ThemeSelector.SelectedIndex = App.MainApp.themes.IndexOf(App.MainApp.CurrentTheme);
+            BSPMaxDepth.Text = App.MainApp.maxBSPDepth.ToString();
         }
 
         public void ChangeTheme(object sender, RoutedEventArgs e)
@@ -43,6 +44,17 @@ namespace calculator_gui
         public void GraphBSPChanged(object sender, RoutedEventArgs e)
         {
             App.MainApp.viewGraphBSP = !App.MainApp.viewGraphBSP;
+        }
+
+        public void MaxBSPDepthChanged(object sender, RoutedEventArgs e)
+        {
+            if (Int32.TryParse(BSPMaxDepth.Text, out int output))
+            {
+                if (output >= 0)
+                {
+                    App.MainApp.maxBSPDepth = output;
+                }
+            }
         }
 
         public void TitleBar_Dragged(object sender, MouseButtonEventArgs e)
