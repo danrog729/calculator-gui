@@ -88,6 +88,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Include="Grapher.cs" />
+    <Compile Include="IntervalArithmetic.cs" />
     <Compile Include="View\ProgrammerCalculator.xaml.cs">
       <DependentUpon>ProgrammerCalculator.xaml</DependentUpon>
     </Compile>

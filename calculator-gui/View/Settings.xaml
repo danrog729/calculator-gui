@@ -60,6 +60,15 @@
                     </ComboBox>
                 </Grid>
 
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">View Graph BSP Lines</TextBlock>
+                    <CheckBox Name="ViewGraphBSP" Grid.Column="1" Margin="10" Checked="GraphBSPChanged" Unchecked="GraphBSPChanged"/>
+                </Grid>
+
             </StackPanel>
         </Border>
     </Grid>

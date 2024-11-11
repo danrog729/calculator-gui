@@ -40,6 +40,11 @@ namespace calculator_gui
             App.MainApp.angleType = AngleSelector.SelectedIndex;
         }
 
+        public void GraphBSPChanged(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.viewGraphBSP = !App.MainApp.viewGraphBSP;
+        }
+
         public void TitleBar_Dragged(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();

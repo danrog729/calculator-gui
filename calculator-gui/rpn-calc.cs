@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -49,7 +50,7 @@ namespace calculator_gui
             expression = new Queue<Token>();
             _tokenList = new List<Token>();
             isValidExpression = false;
-            singleOperators = new HashSet<char> { '+', '-', '*', '×', '/', '÷', '^', '(', ')', '~', '&', '∨', '⊕', '≪', '≫', '|', '⫽', '%' };
+            singleOperators = new HashSet<char> { '+', '-', '*', '×', '/', '÷', '^', '(', ')', '~', '&', '∨', '⊕', '≪', '≫', '|', '⫽', '%'};
             otherOperators = new HashSet<string> { "log_" , "ln" };
             CurrentBase = 10;
         }
@@ -205,6 +206,18 @@ namespace calculator_gui
                     // start the next token
                     tokenStart = index + 1;
                 }
+                else if (_input[index] == 'x')
+                {
+                    workingTokenList.Add(new IntervalToken("x", new MultiInterval()));
+                    // start the next token
+                    tokenStart = index + 1;
+                }
+                else if (_input[index] == 'y')
+                {
+                    workingTokenList.Add(new IntervalToken("y", new MultiInterval()));
+                    // start the next token
+                    tokenStart = index + 1;
+                }
             }
             _tokenList = workingTokenList;
         }
@@ -250,7 +263,7 @@ namespace calculator_gui
                         correctedTokenList.Insert(index, new FloatToken(-1));
                     }
                 }
-                else if (correctedTokenList[index] is ConstantToken)
+                else if (correctedTokenList[index] is ConstantToken || correctedTokenList[index] is VariableToken || correctedTokenList[index] is IntervalToken)
                 {
                     if (index != 0)
                     {
@@ -377,7 +390,7 @@ namespace calculator_gui
             {
                 if (!(token is OperatorToken operatorToken))
                 {
-                    // enqueue any floats to the queue
+                    // enqueue any floats, constants or variables to the queue
                     expression.Enqueue(token);
                 }
                 else if (token is CloseBracketToken || token is CloseModulusToken)
@@ -449,7 +462,7 @@ namespace calculator_gui
 
         public double Evaluate()
         {
-            Stack<FloatToken> workingStack = new Stack<FloatToken>();
+            Stack<OperandToken> workingStack = new Stack<OperandToken>();
             while (expression.Count > 0)
             {
                 if (expression.Peek() is OperatorToken)
@@ -462,15 +475,20 @@ namespace calculator_gui
                     }
                     if (opToken.argumentCount == 1)
                     {
-                        double firstArg = workingStack.Pop().value;
-                        workingStack.Push(new FloatToken(opToken.Operate(firstArg, 0f)));
+                        OperandToken firstArg = workingStack.Pop();
+                        workingStack.Push(opToken.Operate(firstArg, new FloatToken(0f)));
                     }
                     else
                     {
-                        double secondArg = workingStack.Pop().value;
-                        double firstArg = workingStack.Pop().value;
-                        workingStack.Push(new FloatToken(opToken.Operate(firstArg, secondArg)));
+                        OperandToken secondArg = workingStack.Pop();
+                        OperandToken firstArg = workingStack.Pop();
+                        workingStack.Push(opToken.Operate(firstArg, secondArg));
                     }
+                }
+                else if (expression.Peek() is VariableToken)
+                {
+                    isValidExpression = false;
+                    return 0f;
                 }
                 else
                 {
@@ -482,7 +500,38 @@ namespace calculator_gui
                 isValidExpression = false;
                 return 0f;
             }
-            return workingStack.Peek().value;
+            if (workingStack.Peek() is FloatToken)
+            {
+                return ((FloatToken)workingStack.Peek()).value;
+            }
+            else
+            {
+                return 0f;
+            }
+        }
+
+        public bool InsideBounds((double, double) xBounds, (double,double) yBounds)
+        {
+            foreach (Token token in expression)
+            {
+                if (token is IntervalToken)
+                {
+                    if (String.Equals(((IntervalToken)token).identifier, "x"))
+                    {
+                        ((IntervalToken)token).interval |= new Interval(xBounds.Item1, xBounds.Item2);
+                    }
+                    else if (String.Equals(((IntervalToken)token).identifier, "y"))
+                    {
+                        ((IntervalToken)token).interval |= new Interval(yBounds.Item1, yBounds.Item2);
+                    }
+                    else
+                    {
+                        isValidExpression = false;
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
 
         public override string ToString()
@@ -497,6 +546,10 @@ namespace calculator_gui
                 else if (token is ConstantToken)
                 {
                     output += ((ConstantToken)token).ToString();
+                }
+                else if (token is VariableToken)
+                {
+                    output += ((VariableToken)token).identifier;
                 }
                 else
                 {
@@ -518,6 +571,10 @@ namespace calculator_gui
                 else if (token is PiToken)
                 {
                     output += ((PiToken)token).ToString();
+                }
+                else if (token is VariableToken)
+                {
+                    output += ((VariableToken)token).identifier;
                 }
                 else
                 {
@@ -548,7 +605,242 @@ namespace calculator_gui
 
     }
 
-    public class FloatToken : Token
+    public class OperandToken : Token
+    {
+        public static OperandToken operator +(OperandToken a) => a;
+        public static OperandToken operator -(OperandToken a)
+        {
+            if (a is FloatToken)
+            {
+                return -(FloatToken)a;
+            }
+            else if (a is IntervalToken)
+            {
+                return -(IntervalToken)a;
+            }
+            return a;
+        }
+        public static OperandToken operator ~(OperandToken a)
+        {
+            if (a is FloatToken)
+            {
+                return ~(FloatToken)a;
+            }
+            else if (a is IntervalToken)
+            {
+                return ~(IntervalToken)a;
+            }
+            else
+            {
+                return a;
+            }
+        }
+        public static OperandToken operator ++(OperandToken a)
+        {
+            if (a is FloatToken)
+            {
+                return (FloatToken)a++;
+            }
+            else if (a is IntervalToken)
+            {
+                return (IntervalToken)a++;
+            }
+            else
+            {
+                return a;
+            }
+        }
+        public static OperandToken operator --(OperandToken a)
+        {
+            if (a is FloatToken)
+            {
+                return (FloatToken)a--;
+            }
+            else if (a is IntervalToken)
+            {
+                return (IntervalToken)a--;
+            }
+            else
+            {
+                return a;
+            }
+        }
+
+        public static OperandToken operator +(OperandToken a, OperandToken b )
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a + (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b + (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a + (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a + (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator -(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a - (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b - (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a - (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a - (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator *(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a * (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b * (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a * (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a * (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator /(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a / (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b / (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a / (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a / (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator %(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a % (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return b;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return a;
+            }
+            else
+            {
+                return a;
+            }
+        }
+        public static OperandToken operator &(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a & (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b & (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a & (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a & (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator |(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a | (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b | (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a | (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a | (IntervalToken)b;
+            }
+        }
+        public static OperandToken operator ^(OperandToken a, OperandToken b)
+        {
+            if (a is FloatToken && b is FloatToken)
+            {
+                return (FloatToken)a ^ (FloatToken)b;
+            }
+            else if (a is FloatToken && b is IntervalToken)
+            {
+                return (IntervalToken)b ^ (FloatToken)a;
+            }
+            else if (a is IntervalToken && b is FloatToken)
+            {
+                return (IntervalToken)a ^ (FloatToken)b;
+            }
+            else
+            {
+                return (IntervalToken)a ^ (IntervalToken)b;
+            }
+        }
+    }
+
+    public class VariableToken : OperandToken
+    {
+        public string identifier;
+        public VariableToken(string newIdentifier)
+        {
+            identifier = newIdentifier;
+        }
+    }
+
+    public class IntervalToken : OperandToken
+    {
+        public MultiInterval interval;
+        public string identifier;
+        public IntervalToken(string newIdentifier, MultiInterval newInterval)
+        {
+            identifier = newIdentifier;
+            interval = newInterval;
+        }
+    }
+
+    public class FloatToken : OperandToken
     {
         public double value;
 
@@ -595,7 +887,31 @@ namespace calculator_gui
             }
             return output;
         }
+
+        public static FloatToken operator +(FloatToken a) => a;
+        public static FloatToken operator -(FloatToken a) => new FloatToken(-a.value);
+        public static FloatToken operator ~(FloatToken a) => new FloatToken(~(int)a.value);
+        public static FloatToken operator ++(FloatToken a)
+        {
+            a.value++;
+            return a;
+        }
+        public static FloatToken operator --(FloatToken a)
+        {
+            a.value--;
+            return a;
+        }
+
+        public static FloatToken operator +(FloatToken a, FloatToken b) => new FloatToken(a.value + b.value);
+        public static FloatToken operator -(FloatToken a, FloatToken b) => new FloatToken(a.value - b.value);
+        public static FloatToken operator *(FloatToken a, FloatToken b) => new FloatToken(a.value * b.value);
+        public static FloatToken operator /(FloatToken a, FloatToken b) => new FloatToken(a.value / b.value);
+        public static FloatToken operator %(FloatToken a, FloatToken b) => new FloatToken(a.value % b.value);
+        public static FloatToken operator &(FloatToken a, FloatToken b) => new FloatToken((int)a.value & (int)b.value);
+        public static FloatToken operator |(FloatToken a, FloatToken b) => new FloatToken((int)a.value | (int)b.value);
+        public static FloatToken operator ^(FloatToken a, FloatToken b) => new FloatToken((int)a.value ^ (int)b.value);
     }
+
 
     public abstract class ConstantToken : FloatToken
     {
@@ -632,7 +948,7 @@ namespace calculator_gui
     {
         public int precedence;
         public int argumentCount;
-        public abstract double Operate(double value1, double value2);
+        public abstract OperandToken Operate(OperandToken input1, OperandToken input2);
     }
 
     public class AdditionToken : OperatorToken
@@ -642,9 +958,9 @@ namespace calculator_gui
             precedence = 4;
             argumentCount = 2;
         }
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return value1 + value2;
+            return input1 + input2;
         }
 
         public override string ToString()
@@ -660,9 +976,9 @@ namespace calculator_gui
             precedence = 4;
             argumentCount = 2;
         }
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return value1 - value2;
+            return input1 - input2;
         }
 
         public override string ToString()
@@ -678,9 +994,9 @@ namespace calculator_gui
             precedence = 3;
             argumentCount = 2;
         }
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return value1 * value2;
+            return input1 * input2;
         }
 
         public override string ToString()
@@ -696,9 +1012,9 @@ namespace calculator_gui
             precedence = 3;
             argumentCount = 2;
         }
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return value1 / value2;
+            return input1 / input2;
         }
 
         public override string ToString()
@@ -714,9 +1030,27 @@ namespace calculator_gui
             precedence = 2;
             argumentCount = 2;
         }
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return Math.Pow(value1, value2);
+            if (input1 is FloatToken && input2 is FloatToken)
+            {
+                return new FloatToken(Math.Pow(((FloatToken)input1).value, ((FloatToken)input2).value));
+            }
+            else if (input1 is FloatToken && input2 is IntervalToken)
+            {
+                return new IntervalToken(((IntervalToken)input2).identifier, 
+                    MultiInterval.Exponentiation(((IntervalToken)input2).interval, (Interval)((FloatToken)input1).value));
+            }
+            else if (input1 is IntervalToken && input2 is FloatToken)
+            {
+                return new IntervalToken(((IntervalToken)input1).identifier,
+                    MultiInterval.Exponentiation(((IntervalToken)input2).interval, (Interval)((FloatToken)input2).value));
+            }
+            else
+            {
+                return new IntervalToken(((IntervalToken)input1).identifier,
+                    MultiInterval.Exponentiation(((IntervalToken)input2).interval, ((IntervalToken)input2).interval));
+            }
         }
 
         public override string ToString()
@@ -733,7 +1067,7 @@ namespace calculator_gui
             argumentCount = 0;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
             throw new NotImplementedException();
         }
@@ -752,7 +1086,7 @@ namespace calculator_gui
             argumentCount = 0;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
             throw new NotImplementedException();
         }
@@ -771,9 +1105,16 @@ namespace calculator_gui
             argumentCount = 1;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return Math.Abs(value1);
+            if (input1 is FloatToken)
+            {
+                return new FloatToken(Math.Abs(((FloatToken)input1).value));
+            }
+            else
+            {
+                return new IntervalToken(((IntervalToken)input1).identifier, MultiInterval.Absolute(((IntervalToken)input1).interval));
+            }
         }
 
         public override string ToString()
@@ -816,9 +1157,9 @@ namespace calculator_gui
             argumentCount = 1;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)(~((int)value1));
+            return new FloatToken((~((int)((FloatToken)input1).value)));
         }
 
         public override string ToString()
@@ -835,9 +1176,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 & (int)value2);
+            return input1 & input2;
         }
 
         public override string ToString()
@@ -854,9 +1195,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 | (int)value2);
+            return input1 | input2;
         }
 
         public override string ToString()
@@ -873,9 +1214,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 ^ (int)value2);
+            return input1 ^ input2;
         }
 
         public override string ToString()
@@ -892,9 +1233,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 << (int)value2);
+            return new FloatToken((int)((FloatToken)input1).value << (int)((FloatToken)input2).value);
         }
 
         public override string ToString()
@@ -911,9 +1252,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 >> (int)value2);
+            return new FloatToken((int)((FloatToken)input1).value >> (int)((FloatToken)input2).value);
         }
 
         public override string ToString()
@@ -930,9 +1271,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 / (int)value2);
+            return new FloatToken(((int)((FloatToken)input1).value / (int)((FloatToken)input2).value));
         }
 
         public override string ToString()
@@ -949,9 +1290,9 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return (double)((int)value1 % (int)value2);
+            return new FloatToken(((int)((FloatToken)input1).value % (int)((FloatToken)input2).value));
         }
 
         public override string ToString()
@@ -968,9 +1309,24 @@ namespace calculator_gui
             argumentCount = 2;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return Math.Log(value2, value1);
+            if (input1 is FloatToken && input2 is FloatToken)
+            {
+                return new FloatToken(Math.Log(((FloatToken)input2).value, ((FloatToken)input1).value));
+            }
+            else if (input1 is FloatToken && input2 is IntervalToken)
+            {
+                return new IntervalToken(((IntervalToken)input2).identifier, MultiInterval.Logarithm(((IntervalToken)input2).interval, (Interval)((FloatToken)input1).value));
+            }
+            else if (input1 is IntervalToken && input1 is FloatToken)
+            {
+                return new IntervalToken(((IntervalToken)input2).identifier, MultiInterval.Logarithm((Interval)((FloatToken)input2).value, ((IntervalToken)input1).interval));
+            }
+            else
+            {
+                return new IntervalToken(((IntervalToken)input2).identifier, MultiInterval.Logarithm(((IntervalToken)input2).interval, ((IntervalToken)input1).interval));
+            }
         }
 
         public override string ToString()
@@ -987,9 +1343,16 @@ namespace calculator_gui
             argumentCount = 1;
         }
 
-        public override double Operate(double value1, double value2)
+        public override OperandToken Operate(OperandToken input1, OperandToken input2)
         {
-            return Math.Log(value1, Math.E);
+            if (input1 is FloatToken)
+            {
+                return new FloatToken(Math.Log(((FloatToken)input1).value));
+            }
+            else
+            {
+                return new IntervalToken(((IntervalToken)input2).identifier, MultiInterval.Logarithm(((IntervalToken)input1).interval, (Interval)Math.E));
+            }
         }
 
         public override string ToString()

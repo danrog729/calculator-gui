@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Diagnostics.Eventing.Reader;
 
 namespace calculator_gui
 {
@@ -36,6 +37,7 @@ namespace calculator_gui
         }
 
         public int angleType; // 0=degrees, 1=radians
+        public bool viewGraphBSP; // shows the lines of the quadtree
 
         public App()
         {

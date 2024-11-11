@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.TextFormatting;
 using System.Windows.Shapes;
 
 namespace calculator_gui
@@ -30,8 +31,11 @@ namespace calculator_gui
         private int majorGridYPowerOfTen = 0;
 
         public SolidColorBrush axesColour;
+        public SolidColorBrush axesLabelsOutOfRange;
         public SolidColorBrush majorGridColour;
         public SolidColorBrush minorGridColour;
+        public SolidColorBrush transparent = new SolidColorBrush(Colors.Transparent);
+        public SolidColorBrush BSPLine;
 
         private Canvas canvas;
 
@@ -43,9 +47,12 @@ namespace calculator_gui
             maxX = 10;
             minY = -10;
             maxY = 10;
+
             axesColour = new SolidColorBrush() { Color = Color.FromRgb(64, 64, 64) };
+            axesLabelsOutOfRange = new SolidColorBrush() { Color = Color.FromRgb(128,128, 128) };
             majorGridColour = new SolidColorBrush() { Color = Color.FromRgb(192, 192, 192) };
             minorGridColour = new SolidColorBrush() { Color = Color.FromRgb(224, 224, 224) };
+            BSPLine = new SolidColorBrush() { Color = Color.FromRgb(255, 0, 0) };
         }
 
         public void SizeChanged(int newWidth, int newHeight)
@@ -184,6 +191,10 @@ namespace calculator_gui
         {
             canvas.Children.Clear();
             DrawAxes();
+            if (App.MainApp.viewGraphBSP)
+            {
+                DrawRealBorder(10, 10, 100, 100, ref BSPLine, ref transparent);
+            }
         }
 
         private void DrawAxes()
@@ -214,13 +225,17 @@ namespace calculator_gui
             }
         }
 
-        private void DrawRealBorder(int minX, int maxX, int minY, int maxY, ref SolidColorBrush border, ref SolidColorBrush fill)
+        private void DrawRealBorder(int x, int y, int width, int height, ref SolidColorBrush border, ref SolidColorBrush fill)
         {
             Border newBorder = new Border();
-            newBorder.Width = maxX - minX;
-            newBorder.Height = maxY - minY;
+            newBorder.Width = width;
+            newBorder.Height = height;
             newBorder.BorderBrush = border;
+            newBorder.BorderThickness = new Thickness(1);
             newBorder.Background = fill;
+            canvas.Children.Add(newBorder);
+            Canvas.SetTop(newBorder, y);
+            Canvas.SetLeft(newBorder, x);
         }
 
         private void DrawVirtualLabel(float x, float y, int realOffsetX, int realOffsetY, string text, ref SolidColorBrush colour)
@@ -235,9 +250,45 @@ namespace calculator_gui
             Canvas.SetLeft(textBlock, RealiseX(x) + realOffsetX - textSize.Width / 2);
         }
 
-        private void DrawAxesLabels(ref SolidColorBrush colour)
+        private void DrawAxesLabels(ref SolidColorBrush visibleColour)
         {
-            DrawVirtualLabel(0, 0, -10, -10, "0", ref colour);
+            int realOriginX = RealiseX(0);
+            int realOriginY = RealiseY(0);
+
+
+            float originX = 0;
+            float originY = 0;
+            int originOffsetX = -10;
+            int originOffsetY = -10;
+            ref SolidColorBrush colour = ref visibleColour;
+            if (realOriginX < 0)
+            {
+                originX = minX;
+                originOffsetX = 10;
+                colour = ref axesLabelsOutOfRange;
+            }
+            else if (realOriginX > pixelWidth)
+            {
+                originX = maxX;
+                originOffsetX = -10;
+                colour = ref axesLabelsOutOfRange;
+            }
+            if (realOriginY < 0)
+            {
+                originY = maxY;
+                originOffsetY = -10;
+                colour = ref axesLabelsOutOfRange;
+            }
+            else if (realOriginY > pixelHeight)
+            {
+                originY = minY;
+                originOffsetY = 10;
+                colour = ref axesLabelsOutOfRange;
+            }
+            DrawVirtualLabel(originX, originY, originOffsetX, originOffsetY, "0", ref colour);
+
+
+            colour = ref visibleColour;
             string decimalPlaces = "n0";
             if (majorGridXPowerOfTen < 0)
             {
@@ -248,10 +299,26 @@ namespace calculator_gui
             {
                 if (x - majorGridXStep / 2 > 0 || x + majorGridXStep / 2 < 0)
                 {
-                    DrawVirtualLabel(x, 0, 0, -10, x.ToString(decimalPlaces), ref colour);
+                    float yValue = 0;
+                    int offset = -10;
+                    if (realOriginY < 0)
+                    {
+                        yValue = maxY;
+                        offset = -10;
+                        colour = ref axesLabelsOutOfRange;
+                    }
+                    else if (realOriginY > pixelHeight)
+                    {
+                        yValue = minY;
+                        offset = 10;
+                        colour = ref axesLabelsOutOfRange;
+                    }
+                    DrawVirtualLabel(x, yValue, 0, offset, x.ToString(decimalPlaces), ref colour);
                 }
                 x += majorGridXStep;
             }
+
+            colour = ref visibleColour;
             decimalPlaces = "n0";
             if (majorGridYPowerOfTen < 0)
             {
@@ -262,7 +329,21 @@ namespace calculator_gui
             {
                 if (y - majorGridYStep / 2 > 0 || y + majorGridYStep / 2 < 0)
                 {
-                    DrawVirtualLabel(0, y, -10, 0, y.ToString(decimalPlaces), ref colour);
+                    float xValue = 0;
+                    int offset = -10;
+                    if (realOriginX < 0)
+                    {
+                        xValue = minX;
+                        offset = 10;
+                        colour = ref axesLabelsOutOfRange;
+                    }
+                    else if (realOriginX > pixelWidth)
+                    {
+                        xValue = maxX;
+                        offset = -10;
+                        colour = ref axesLabelsOutOfRange;
+                    }
+                    DrawVirtualLabel(xValue, y, offset, 0, y.ToString(decimalPlaces), ref colour);
                 }
                 y += majorGridYStep;
             }
