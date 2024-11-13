@@ -74,9 +74,18 @@
                         <ColumnDefinition Width="140"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Auto BSP Depth</TextBlock>
+                    <CheckBox Name="AutoBSPDepth" Grid.Column="1" Margin="10" Checked="AutoBSPChanged" Unchecked="AutoBSPChanged" IsChecked="True"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">BSP Max Depth</TextBlock>
                     <Border Grid.Column="1" Margin="10" Style="{DynamicResource Border}">
-                        <TextBox Name="BSPMaxDepth" Style="{DynamicResource TextBox}" TextChanged="MaxBSPDepthChanged">5</TextBox>
+                        <TextBox Name="BSPMaxDepth" Style="{DynamicResource TextBox}" TextChanged="MaxBSPDepthChanged" IsEnabled="False">5</TextBox>
                     </Border>
                 </Grid>
 

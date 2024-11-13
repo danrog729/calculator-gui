@@ -42,6 +42,7 @@ namespace calculator_gui
         private FreeformCalculator calculator;
 
         BSPNode bspRoot;
+        private int absoluteMaxDepth = 0;
         private int maxDepth = 5;
 
         public Graph(ref Canvas newCanvas)
@@ -62,6 +63,11 @@ namespace calculator_gui
 
             calculator = new FreeformCalculator();
             calculator.Input = "";
+
+            absoluteMaxDepth =
+                (int)Math.Max(
+                    Math.Ceiling(Math.Log(pixelWidth, 2)),
+                    Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
         }
 
         public void SizeChanged(int newWidth, int newHeight)
@@ -98,6 +104,10 @@ namespace calculator_gui
             }
             pixelWidth = newWidth;
             pixelHeight= newHeight;
+            absoluteMaxDepth = 
+                (int)Math.Max(
+                    Math.Ceiling(Math.Log(pixelWidth, 2)),
+                    Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
             UpdateFrame();
         }
 
@@ -204,12 +214,20 @@ namespace calculator_gui
 
         private void UpdateFrame()
         {
-            maxDepth = App.MainApp.maxBSPDepth;
+            if (App.MainApp.useAutoBSPDepth)
+            {
+                maxDepth = absoluteMaxDepth;
+            }
+            else
+            {
+                maxDepth = App.MainApp.maxBSPDepth;
+            }
             canvas.Children.Clear();
             DrawAxes();
             if (calculator.isValidExpression)
             {
                 bspRoot = BSP();
+                DrawGraph(bspRoot);
                 if (App.MainApp.viewGraphBSP)
                 {
                     DrawBSP(bspRoot);
@@ -247,13 +265,13 @@ namespace calculator_gui
             }
         }
 
-        private void DrawRealBorder(int x, int y, int width, int height, ref SolidColorBrush border, ref SolidColorBrush fill)
+        private void DrawRealBorder(int x, int y, int width, int height, ref SolidColorBrush border, ref SolidColorBrush fill, int thickness)
         {
             Border newBorder = new Border();
             newBorder.Width = width;
             newBorder.Height = height;
             newBorder.BorderBrush = border;
-            newBorder.BorderThickness = new Thickness(1);
+            newBorder.BorderThickness = new Thickness(thickness);
             newBorder.Background = fill;
             canvas.Children.Add(newBorder);
             Canvas.SetTop(newBorder, y);
@@ -444,11 +462,23 @@ namespace calculator_gui
             int realYMax = RealiseY(node.yMax);
             if (node.containsGraph)
             {
-                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, ref transparent);
+                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, ref transparent, 1);
             }
             else
             {
-                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, ref transparent);
+                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, ref transparent, 1);
+            }
+        }
+
+        private void DrawCell(ref BSPNode node)
+        {
+            int realXMin = RealiseX(node.xMin);
+            int realXMax = RealiseX(node.xMax);
+            int realYMin = RealiseY(node.yMin);
+            int realYMax = RealiseY(node.yMax);
+            if (node.containsGraph && node.children.Count == 0)
+            {
+                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref axesColour, ref axesColour, 0);
             }
         }
 
@@ -511,7 +541,7 @@ namespace calculator_gui
             {
                 if (child.containsGraph)
                 {
-                    if (depth < maxDepth)
+                    if (depth < maxDepth && depth < absoluteMaxDepth)
                     {
                         BSPDescend(child, depth + 1);
                     }
@@ -525,6 +555,15 @@ namespace calculator_gui
             for (int index = 0; index < root.children.Count; index++)
             {
                 DrawBSP(root.children[index]);
+            }
+        }
+
+        private void DrawGraph(BSPNode root)
+        {
+            DrawCell(ref root);
+            for (int index = 0; index < root.children.Count; index++)
+            {
+                DrawGraph(root.children[index]);
             }
         }
     }

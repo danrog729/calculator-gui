@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls.Primitives;
 using System.Xml;
 
 namespace calculator_gui
@@ -158,34 +160,91 @@ namespace calculator_gui
 
         public static Interval Sin(Interval a)
         {
-            return new Interval(
-                Math.Min(
-                    Math.Sin(a.Minimum), Math.Sin(a.Maximum)),
-                Math.Max(
-                    Math.Sin(a.Minimum), Math.Sin(a.Maximum)));
+            return Cos(new Interval(a.Minimum - Math.PI / 2, a.Maximum - Math.PI / 2));
         }
 
         public static Interval Cos(Interval a)
         {
-            return new Interval(
-                Math.Min(
-                    Math.Cos(a.Minimum), Math.Cos(a.Maximum)),
-                Math.Max(
-                    Math.Cos(a.Minimum), Math.Cos(a.Maximum)));
+            Interval output;
+            if (a.Maximum - a.Minimum >= Math.PI * 2)
+            {
+                output = new Interval(-1, 1);
+            }
+            else
+            {
+                double normalisedMinimum = a.Minimum - 2 * Math.PI * (int)(a.Minimum / (2 * Math.PI));
+                double normalisedMaximum = a.Maximum - 2 * Math.PI * (int)(a.Minimum / (2 * Math.PI));
+                if (normalisedMinimum < 0)
+                {
+                    normalisedMinimum += Math.PI * 2;
+                    normalisedMaximum += Math.PI * 2;
+                }
+
+                double outputMinimum = 0;
+                double outputMaximum = 0;
+
+                if (normalisedMinimum <= Math.PI)
+                {
+                    // minimum is within first half of first period of cos x
+                    if (normalisedMaximum <= Math.PI)
+                    {
+                        // maximum is within first half of first period of cos x
+                        outputMinimum = Math.Cos(a.Maximum);
+                        outputMaximum = Math.Cos(a.Minimum);
+                    }
+                    else if (normalisedMaximum <= Math.PI * 2)
+                    {
+                        // maximum is within second half of first period of cos x
+                        outputMinimum = -1;
+                        outputMaximum = Math.Max(Math.Cos(a.Minimum), Math.Cos(a.Maximum));
+                    }
+                    else
+                    {
+                        // maximum is within first half of second period of cos x
+                        outputMinimum = -1;
+                        outputMaximum = 1;
+                    }
+                }
+                else
+                {
+                    // minimum is within second half of first period of cos x
+                    if (normalisedMaximum <= Math.PI * 2)
+                    {
+                        // maximum is within second half of first period of cos x
+                        outputMinimum = Math.Cos(a.Minimum);
+                        outputMaximum = Math.Cos(a.Maximum);
+                    }
+                    else if (normalisedMaximum <= Math.PI * 3)
+                    {
+                        // maximum is within first half of second period of cos x
+                        outputMinimum = Math.Min(Math.Cos(a.Minimum), Math.Cos(a.Maximum));
+                        outputMaximum = 1;
+                    }
+                    else
+                    {
+                        // maximum is within second half of second period of cos x
+                        outputMinimum = -1;
+                        outputMaximum = 1;
+                    }
+                }
+
+                output = new Interval(outputMinimum, outputMaximum);
+            }
+            return output;
         }
 
         public static Interval Arcsin(Interval a)
         {
             double minimum = Math.Max(a.Minimum, -1);
-            double maximum = Math.Min(a.Minimum, -1);
+            double maximum = Math.Min(a.Maximum, 1);
             return new Interval(Math.Asin(minimum), Math.Asin(maximum));
         }
 
         public static Interval Arccos(Interval a)
         {
             double minimum = Math.Max(a.Minimum, -1);
-            double maximum = Math.Min(a.Minimum, -1);
-            return new Interval(Math.Acos(minimum), Math.Acos(maximum));
+            double maximum = Math.Min(a.Maximum, 1);
+            return new Interval(Math.Acos(maximum), Math.Acos(minimum));
         }
 
         public static Interval Arctan(Interval a)
@@ -435,7 +494,9 @@ namespace calculator_gui
             {
                 foreach (Interval baseInterval in newBase.Intervals)
                 {
-                    output |= (MultiInterval)(new Interval(Math.Log(valueInterval.Minimum), Math.Log(valueInterval.Maximum))) / new Interval(Math.Log(baseInterval.Minimum), Math.Log(baseInterval.Maximum));
+                    output |= (MultiInterval)(
+                        new Interval(Math.Log(valueInterval.Minimum), Math.Log(valueInterval.Maximum))) / 
+                        new Interval(Math.Log(baseInterval.Minimum), Math.Log(baseInterval.Maximum));
                 }
             }
             return output;
@@ -444,6 +505,7 @@ namespace calculator_gui
         public static MultiInterval Sin(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 output |= Interval.Sin(aInterval);
@@ -454,6 +516,7 @@ namespace calculator_gui
         public static MultiInterval Cos(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 output |= Interval.Cos(aInterval);
@@ -464,9 +527,52 @@ namespace calculator_gui
         public static MultiInterval Tan(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
-                output |= (MultiInterval)Interval.Sin(aInterval) / Interval.Cos(aInterval);
+                if (aInterval.Maximum - aInterval.Minimum >= Math.PI)
+                {
+                    output |= new Interval(Double.NegativeInfinity, Double.PositiveInfinity);
+                }
+                else
+                {
+                    double normalisedMinimum = aInterval.Minimum - Math.PI * (int)(aInterval.Minimum / Math.PI);
+                    double normalisedMaximum = aInterval.Maximum - Math.PI * (int)(aInterval.Minimum / Math.PI);
+                    if (normalisedMinimum < 0)
+                    {
+                        normalisedMinimum += Math.PI;
+                        normalisedMaximum += Math.PI;
+                    }
+
+                    if (normalisedMinimum < Math.PI / 2)
+                    {
+                        // minimum is within first half of first period of tan x
+                        if (normalisedMaximum < Math.PI / 2)
+                        {
+                            // maximum is also within first half of first period of tan x
+                            output |= new Interval(Math.Tan(aInterval.Minimum), Math.Tan(aInterval.Maximum));
+                        }
+                        else
+                        {
+                            output |= new Interval(Math.Tan(aInterval.Minimum), Double.PositiveInfinity);
+                            output |= new Interval(Double.NegativeInfinity, Math.Tan(aInterval.Maximum));
+                        }
+                    }
+                    else
+                    {
+                        // minimum is within second half of first period of tan x
+                        if (normalisedMaximum < 3 * Math.PI / 2)
+                        {
+                            // maximum is not within second half of second period of tan x
+                            output |= new Interval(Math.Tan(aInterval.Minimum), Math.Tan(aInterval.Maximum));
+                        }
+                        else
+                        {
+                            output |= new Interval(Math.Tan(aInterval.Minimum), Double.PositiveInfinity);
+                            output |= new Interval(Double.NegativeInfinity, Math.Tan(aInterval.Maximum));
+                        }
+                    }
+                }
             }
             return output;
         }
@@ -474,6 +580,7 @@ namespace calculator_gui
         public static MultiInterval Arcsin(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 output |= Interval.Arcsin(aInterval);
@@ -484,6 +591,7 @@ namespace calculator_gui
         public static MultiInterval Arccos(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 output |= Interval.Arccos(aInterval);
@@ -494,6 +602,7 @@ namespace calculator_gui
         public static MultiInterval Arctan(MultiInterval a)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval aInterval in a.Intervals)
             {
                 output |= Interval.Arctan(aInterval);
@@ -601,6 +710,7 @@ namespace calculator_gui
             if (b.Contains(0))
             {
                 MultiInterval reciprocal = new MultiInterval();
+                reciprocal.Intervals.Clear();
                 foreach (Interval interval in b.Intervals)
                 {
                     reciprocal |= new Interval(Double.NegativeInfinity, 1 / interval.Minimum);
@@ -611,6 +721,7 @@ namespace calculator_gui
             else
             {
                 MultiInterval reciprocal = new MultiInterval();
+                reciprocal.Intervals.Clear();
                 foreach (Interval interval in b.Intervals)
                 {
                     reciprocal |= new Interval(1 / interval.Maximum, 1 / interval.Minimum);
@@ -665,7 +776,7 @@ namespace calculator_gui
             {
                 if (overlaps[overlapIndex] >= 1 && overlaps[overlapIndex - 1] == 0)
                 {
-                    outputBoundaries.Add(list[overlapIndex - 1]);
+                    outputBoundaries.Add(list[overlapIndex]);
                 }
                 else if (overlaps[overlapIndex] == 0 && overlaps[overlapIndex - 1] >= 1)
                 {

@@ -46,6 +46,15 @@ namespace calculator_gui
             App.MainApp.viewGraphBSP = !App.MainApp.viewGraphBSP;
         }
 
+        public void AutoBSPChanged(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.useAutoBSPDepth = !App.MainApp.useAutoBSPDepth;
+            if (BSPMaxDepth != null)
+            {
+                BSPMaxDepth.IsEnabled = !BSPMaxDepth.IsEnabled;
+            }
+        }
+
         public void MaxBSPDepthChanged(object sender, RoutedEventArgs e)
         {
             if (Int32.TryParse(BSPMaxDepth.Text, out int output))
