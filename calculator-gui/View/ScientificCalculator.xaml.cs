@@ -21,7 +21,7 @@ namespace calculator_gui
     /// </summary>
     public partial class ScientificCalculator : Page
     {
-        Graph grapher;
+        Grapher grapher;
 
         bool mouseWasDown;
         int lastMouseX;
@@ -31,33 +31,39 @@ namespace calculator_gui
         public ScientificCalculator()
         {
             InitializeComponent();
-            grapher = new Graph(ref OutputCanvas);
+            //grapher = new Graph(ref OutputCanvas);
+            grapher = new Grapher(ref OutputImage);
         }
 
-        public void CanvasSize_Changed(object sender, SizeChangedEventArgs e)
+        public void EquationTextChanged(object sender, EventArgs e)
         {
-            grapher.SizeChanged((int)e.NewSize.Width, (int)e.NewSize.Height);
+            grapher.NewEquation(Equation.Text);
         }
 
-        public void CanvasZoom(object sender, MouseWheelEventArgs e)
+        public void ImageSize_Changed(object sender, SizeChangedEventArgs e)
         {
-            mousePos = e.GetPosition(OutputCanvas);
+            grapher.SizeChanged((int)ImageBorder.ActualWidth, (int)ImageBorder.ActualHeight);
+        }
+
+        public void ImageZoom(object sender, MouseWheelEventArgs e)
+        {
+            mousePos = e.GetPosition(OutputImage);
             grapher.Zoom((int)mousePos.X, (int)mousePos.Y, e.Delta);
         }
 
-        public void CanvasMouseDown(object sender, MouseButtonEventArgs e)
+        public void ImageMouseDown(object sender, MouseButtonEventArgs e)
         {
-            mousePos = e.GetPosition(OutputCanvas);
+            mousePos = e.GetPosition(OutputImage);
             lastMouseX = (int)mousePos.X;
             lastMouseY = (int)mousePos.Y;
             mouseWasDown = true;
         }
 
-        public void CanvasMouseMove(object sender, MouseEventArgs e)
+        public void ImageMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                mousePos = e.GetPosition(OutputCanvas);
+                mousePos = e.GetPosition(OutputImage);
                 if (!mouseWasDown)
                 {
                     lastMouseX = (int)mousePos.X;
@@ -76,11 +82,6 @@ namespace calculator_gui
             {
                 mouseWasDown = false;
             }
-        }
-
-        public void EquationTextChanged(object sender, EventArgs e)
-        {
-            grapher.NewEquation(Equation.Text);
         }
     }
 }

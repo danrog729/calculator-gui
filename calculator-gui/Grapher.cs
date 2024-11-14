@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.TextFormatting;
-using System.Windows.Shapes;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace calculator_gui
 {
-    public class Graph
+    public class Grapher
     {
         private int pixelWidth;
         private int pixelHeight;
@@ -33,40 +27,47 @@ namespace calculator_gui
         private int majorGridXPowerOfTen = 0;
         private int majorGridYPowerOfTen = 0;
 
-        public SolidColorBrush axesColour;
-        public SolidColorBrush axesLabelsOutOfRange;
-        public SolidColorBrush majorGridColour;
-        public SolidColorBrush minorGridColour;
-        public SolidColorBrush transparent = new SolidColorBrush(Colors.Transparent);
-        public SolidColorBrush BSPLineInvalid;
-        public SolidColorBrush BSPLineValid;
+        public Color axesColour;
+        public Color axesLabelsOutOfRange;
+        public Color majorGridColour;
+        public Color minorGridColour;
+        public Color transparent = Color.Transparent;
+        public Color black = Color.Black;
+        public Color BSPLineInvalid;
+        public Color BSPLineValid;
 
-        private Canvas canvas;
+        private System.Windows.Controls.Image image;
+        private BitmapRenderer renderer;
         private FreeformCalculator calculator;
 
         Stopwatch calculationStopwatch;
         Stopwatch renderingStopwatch;
+        Stopwatch axesStopwatch;
+        Stopwatch curveStopwatch;
+        Stopwatch BSPLineStopwatch;
         Stopwatch totalStopwatch;
 
         BSPNode bspRoot;
         private int absoluteMaxDepth = 0;
         private int maxDepth = 5;
 
-        public Graph(ref Canvas newCanvas)
+        public Grapher(ref System.Windows.Controls.Image newImage)
         {
-            canvas = newCanvas;
-            canvas.Children.Clear();
+            image = newImage;
+            renderer = new BitmapRenderer(100, 100);
+            image.Source = renderer.bitmap;
+
             minX = -10;
             maxX = 10;
             minY = -10;
             maxY = 10;
 
-            axesColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(64, 64, 64) };
-            axesLabelsOutOfRange = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(128,128, 128) };
-            majorGridColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(192, 192, 192) };
-            minorGridColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(224, 224, 224) };
-            BSPLineInvalid = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(255, 0, 0) };
-            BSPLineValid = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(0, 255, 0) };
+            axesColour = Color.FromArgb(64, 64, 64);
+            axesLabelsOutOfRange = Color.FromArgb(128, 128, 128);
+            majorGridColour = Color.FromArgb(192, 192, 192);
+            minorGridColour = Color.FromArgb(224, 224, 224);
+            BSPLineInvalid = Color.FromArgb(255, 0, 0);
+            BSPLineValid = Color.FromArgb(0, 255, 0);
 
             calculator = new FreeformCalculator();
             calculator.Input = "";
@@ -110,8 +111,10 @@ namespace calculator_gui
                 }
             }
             pixelWidth = newWidth;
-            pixelHeight= newHeight;
-            absoluteMaxDepth = 
+            pixelHeight = newHeight;
+            renderer = new BitmapRenderer(pixelWidth, pixelHeight);
+            image.Source = renderer.bitmap;
+            absoluteMaxDepth =
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
                     Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
@@ -221,13 +224,15 @@ namespace calculator_gui
 
         private void UpdateFrame()
         {
-            if (App.MainApp.performanceStatsEnabled)
-            {
-                calculationStopwatch = new Stopwatch();
-                renderingStopwatch = new Stopwatch();
-                totalStopwatch = new Stopwatch();
-                totalStopwatch.Start();
-            }
+            calculationStopwatch = new Stopwatch();
+            renderingStopwatch = new Stopwatch();
+            axesStopwatch = new Stopwatch();
+            curveStopwatch = new Stopwatch();
+            BSPLineStopwatch = new Stopwatch();
+            totalStopwatch = new Stopwatch();
+            totalStopwatch.Start();
+
+
             if (App.MainApp.useAutoBSPDepth)
             {
                 maxDepth = absoluteMaxDepth;
@@ -237,75 +242,57 @@ namespace calculator_gui
                 maxDepth = App.MainApp.maxBSPDepth;
             }
 
-            if (App.MainApp.performanceStatsEnabled)
-            {
-                renderingStopwatch.Start();
-            }
-            canvas.Children.Clear();
+
+            renderingStopwatch.Start();
+            axesStopwatch.Start();
+            renderer.Fill(Color.White);
             DrawAxes();
-            if (App.MainApp.performanceStatsEnabled)
-            {
-                renderingStopwatch.Stop();
-            }
+            renderingStopwatch.Stop();
+            axesStopwatch.Stop();
 
             if (calculator.isValidExpression)
             {
-                if (App.MainApp.performanceStatsEnabled)
-                {
-                    calculationStopwatch.Start();
-                }
+                calculationStopwatch.Start();
                 bspRoot = BSP();
-                if (App.MainApp.performanceStatsEnabled)
-                {
-                    calculationStopwatch.Stop();
-                }
-
-                if (App.MainApp.performanceStatsEnabled)
-                {
-                    renderingStopwatch.Start();
-                }
+                calculationStopwatch.Stop();
+                renderingStopwatch.Start();
+                curveStopwatch.Start();
                 DrawGraph(bspRoot);
+                curveStopwatch.Stop();
                 if (App.MainApp.viewGraphBSP)
                 {
+                    BSPLineStopwatch.Start();
                     DrawBSP(bspRoot);
+                    BSPLineStopwatch.Stop();
                 }
-                if (App.MainApp.performanceStatsEnabled)
-                {
-                    renderingStopwatch.Stop();
-                }
+                renderingStopwatch.Stop();
             }
+            totalStopwatch.Stop();
 
             if (App.MainApp.performanceStatsEnabled)
             {
-                totalStopwatch.Stop();
-                TextBlock textBlock = new TextBlock();
-                textBlock.Text = "Calculation: " + calculationStopwatch.ElapsedMilliseconds.ToString() + "ms\n"
-                    + "Rendering: " + renderingStopwatch.ElapsedMilliseconds.ToString() + "ms\n"
-                    + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms";
-                textBlock.Foreground = axesColour;
-                canvas.Children.Add(textBlock);
-                textBlock.Measure(new System.Windows.Size(Single.PositiveInfinity, Single.PositiveInfinity));
-                System.Windows.Size textSize = textBlock.DesiredSize;
-                Canvas.SetTop(textBlock, 5);
-                Canvas.SetLeft(textBlock, 5);
+                renderer.DrawText(5, 5, "Calculation: " + calculationStopwatch.ElapsedMilliseconds.ToString() + "ms (" + Math.Round(((double)calculationStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                    + "Rendering: " + renderingStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)renderingStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                    + "    Axes: " + axesStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)axesStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                    + "    Curve: " + curveStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)curveStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                    + "    BSP Lines: " + BSPLineStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)BSPLineStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                    + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms",
+                    ref black);
             }
         }
-
-
 
         private void DrawAxes()
         {
             DrawGrid(minorGridXStep, minorGridYStep, ref minorGridColour, 1);
-
             DrawGrid(majorGridXStep, majorGridYStep, ref majorGridColour, 1);
 
             DrawVerticalVirtualLine(0, ref axesColour, 2);
             DrawHorizontalVirtualLine(0, ref axesColour, 2);
 
-            DrawAxesLabels(ref axesColour);
+            DrawAxesLabels();
         }
 
-        private void DrawGrid(float xStep, float yStep, ref SolidColorBrush colour, int thickness)
+        private void DrawGrid(float xStep, float yStep, ref Color colour, int thickness)
         {
             float x = xStep * (float)Math.Floor(minX / xStep);
             while (x < maxX)
@@ -321,32 +308,30 @@ namespace calculator_gui
             }
         }
 
-        private void DrawRealBorder(int x, int y, int width, int height, ref SolidColorBrush border, ref SolidColorBrush fill, int thickness)
+        private void DrawVerticalVirtualLine(float x, ref Color colour, int thickness)
         {
-            Border newBorder = new Border();
-            newBorder.Width = width;
-            newBorder.Height = height;
-            newBorder.BorderBrush = border;
-            newBorder.BorderThickness = new Thickness(thickness);
-            newBorder.Background = fill;
-            canvas.Children.Add(newBorder);
-            Canvas.SetTop(newBorder, y);
-            Canvas.SetLeft(newBorder, x);
+            if (minX > x || maxX < x)
+            {
+                return;
+            }
+            renderer.DrawVerticalLine(RealiseX(x), ref colour, thickness);
         }
 
-        private void DrawVirtualLabel(float x, float y, int realOffsetX, int realOffsetY, string text, ref SolidColorBrush colour)
+        private void DrawHorizontalVirtualLine(float y, ref Color colour, int thickness)
         {
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.Foreground = colour;
-            canvas.Children.Add(textBlock);
-            textBlock.Measure(new System.Windows.Size(Single.PositiveInfinity, Single.PositiveInfinity));
-            System.Windows.Size textSize = textBlock.DesiredSize;
-            Canvas.SetTop(textBlock, RealiseY(y) - realOffsetY - textSize.Height / 2);
-            Canvas.SetLeft(textBlock, RealiseX(x) + realOffsetX - textSize.Width / 2);
+            if (minY > y || maxY < y)
+            {
+                return;
+            }
+            renderer.DrawHorizontalLine(RealiseY(y), ref colour, thickness);
         }
 
-        private void DrawAxesLabels(ref SolidColorBrush visibleColour)
+        private void DrawVirtualLabel(float x, float y, int realOffsetX, int realOffsetY, string text, ref Color colour)
+        {
+            renderer.DrawCenteredText(RealiseX(x) + realOffsetX, RealiseY(y) - realOffsetY, text, ref colour);
+        }
+
+        private void DrawAxesLabels()
         {
             int realOriginX = RealiseX(0);
             int realOriginY = RealiseY(0);
@@ -356,7 +341,7 @@ namespace calculator_gui
             float originY = 0;
             int originOffsetX = -10;
             int originOffsetY = -10;
-            ref SolidColorBrush colour = ref visibleColour;
+            ref Color colour = ref axesColour;
             if (realOriginX < 0)
             {
                 originX = minX;
@@ -384,7 +369,7 @@ namespace calculator_gui
             DrawVirtualLabel(originX, originY, originOffsetX, originOffsetY, "0", ref colour);
 
 
-            colour = ref visibleColour;
+            colour = ref axesColour;
             string decimalPlaces = "n0";
             if (majorGridXPowerOfTen < 0)
             {
@@ -414,7 +399,7 @@ namespace calculator_gui
                 x += majorGridXStep;
             }
 
-            colour = ref visibleColour;
+            colour = ref axesColour;
             decimalPlaces = "n0";
             if (majorGridYPowerOfTen < 0)
             {
@@ -445,53 +430,6 @@ namespace calculator_gui
             }
         }
 
-        private void DrawVirtualLine(float x1, float y1, float x2, float y2, ref SolidColorBrush colour)
-        {
-            Line line = new Line();
-            line.X1 = (x1 - minX) / (maxX - minX) * pixelWidth;
-            line.Y1 = pixelHeight - (y1 - minY) / (maxY - minY) * pixelHeight;
-            line.X2 = (x2 - minX) / (maxX - minX) * pixelWidth;
-            line.Y2 = pixelHeight - (y2 - minY) / (maxY - minY) * pixelHeight;
-            line.StrokeThickness = 1;
-            line.Stroke = colour;
-            line.SnapsToDevicePixels = false;
-            canvas.Children.Add(line);
-        }
-
-        private void DrawVerticalVirtualLine(float x, ref SolidColorBrush colour, int thickness)
-        {
-            if (minX > x || maxX < x)
-            {
-                return;
-            }
-            Line line = new Line();
-            line.X1 = (x - minX) / (maxX - minX) * pixelWidth;
-            line.Y1 = 0;
-            line.X2 = (x - minX) / (maxX - minX) * pixelWidth;
-            line.Y2 = pixelHeight;
-            line.StrokeThickness = thickness;
-            line.Stroke = colour;
-            line.SnapsToDevicePixels = false;
-            canvas.Children.Add(line);
-        }
-
-        private void DrawHorizontalVirtualLine(float y, ref SolidColorBrush colour, int thickness)
-        {
-            if (minY > y || maxY < y)
-            {
-                return;
-            }
-            Line line = new Line();
-            line.X1 = 0;
-            line.Y1 = pixelHeight - (y - minY) / (maxY - minY) * pixelHeight;
-            line.X2 = pixelWidth;
-            line.Y2 = pixelHeight - (y - minY) / (maxY - minY) * pixelHeight;
-            line.StrokeThickness = thickness;
-            line.Stroke = colour;
-            line.SnapsToDevicePixels = false;
-            canvas.Children.Add(line);
-        }
-
         private float VirtualiseX(int x)
         {
             return minX + (maxX - minX) * ((float)x / pixelWidth);
@@ -508,34 +446,6 @@ namespace calculator_gui
         private int RealiseY(float y)
         {
             return (int)((1 - (y - minY) / (maxY - minY)) * pixelHeight);
-        }
-
-        private void DrawBSPNode(ref BSPNode node)
-        {
-            int realXMin = RealiseX(node.xMin);
-            int realXMax = RealiseX(node.xMax);
-            int realYMin = RealiseY(node.yMin);
-            int realYMax = RealiseY(node.yMax);
-            if (node.containsGraph)
-            {
-                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, ref transparent, 1);
-            }
-            else
-            {
-                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, ref transparent, 1);
-            }
-        }
-
-        private void DrawCell(ref BSPNode node)
-        {
-            int realXMin = RealiseX(node.xMin);
-            int realXMax = RealiseX(node.xMax);
-            int realYMin = RealiseY(node.yMin);
-            int realYMax = RealiseY(node.yMax);
-            if (node.containsGraph && node.children.Count == 0)
-            {
-                DrawRealBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref axesColour, ref axesColour, 0);
-            }
         }
 
         private BSPNode BSP()
@@ -605,6 +515,27 @@ namespace calculator_gui
             }
         }
 
+        private void DrawGraph(BSPNode root)
+        {
+            DrawCell(ref root);
+            for (int index = 0; index < root.children.Count; index++)
+            {
+                DrawGraph(root.children[index]);
+            }
+        }
+
+        private void DrawCell(ref BSPNode node)
+        {
+            int realXMin = RealiseX(node.xMin);
+            int realXMax = RealiseX(node.xMax);
+            int realYMin = RealiseY(node.yMin);
+            int realYMax = RealiseY(node.yMax);
+            if (node.containsGraph && node.children.Count == 0)
+            {
+                renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref axesColour);
+            }
+        }
+
         private void DrawBSP(BSPNode root)
         {
             DrawBSPNode(ref root);
@@ -614,12 +545,19 @@ namespace calculator_gui
             }
         }
 
-        private void DrawGraph(BSPNode root)
+        private void DrawBSPNode(ref BSPNode node)
         {
-            DrawCell(ref root);
-            for (int index = 0; index < root.children.Count; index++)
+            int realXMin = RealiseX(node.xMin);
+            int realXMax = RealiseX(node.xMax);
+            int realYMin = RealiseY(node.yMin);
+            int realYMax = RealiseY(node.yMax);
+            if (node.containsGraph)
             {
-                DrawGraph(root.children[index]);
+                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, 1);
+            }
+            else
+            {
+                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, 1);
             }
         }
     }

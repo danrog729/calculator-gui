@@ -15,11 +15,16 @@
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
         <Border Name="ImageBorder" Style="{DynamicResource Border}" Margin="5,5,5,10">
-            <Canvas Name="OutputCanvas" Background="White" ClipToBounds="True"
+            <!--Canvas Name="OutputCanvas" Background="White" ClipToBounds="True"
                     SizeChanged="CanvasSize_Changed" 
                     MouseWheel="CanvasZoom" 
                     MouseDown="CanvasMouseDown"
-                    MouseMove="CanvasMouseMove"/>
+                    MouseMove="CanvasMouseMove"/-->
+            <Image Name="OutputImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   SizeChanged="ImageSize_Changed"
+                   MouseWheel="ImageZoom"
+                   MouseDown="ImageMouseDown"
+                   MouseMove="ImageMouseMove"/>
         </Border>
         <GridSplitter Grid.Row="1"
                       Background="{DynamicResource Foreground}"
