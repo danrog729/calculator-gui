@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.TextFormatting;
 using System.Windows.Shapes;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace calculator_gui
 {
@@ -41,6 +44,10 @@ namespace calculator_gui
         private Canvas canvas;
         private FreeformCalculator calculator;
 
+        Stopwatch calculationStopwatch;
+        Stopwatch renderingStopwatch;
+        Stopwatch totalStopwatch;
+
         BSPNode bspRoot;
         private int absoluteMaxDepth = 0;
         private int maxDepth = 5;
@@ -54,12 +61,12 @@ namespace calculator_gui
             minY = -10;
             maxY = 10;
 
-            axesColour = new SolidColorBrush() { Color = Color.FromRgb(64, 64, 64) };
-            axesLabelsOutOfRange = new SolidColorBrush() { Color = Color.FromRgb(128,128, 128) };
-            majorGridColour = new SolidColorBrush() { Color = Color.FromRgb(192, 192, 192) };
-            minorGridColour = new SolidColorBrush() { Color = Color.FromRgb(224, 224, 224) };
-            BSPLineInvalid = new SolidColorBrush() { Color = Color.FromRgb(255, 0, 0) };
-            BSPLineValid = new SolidColorBrush() { Color = Color.FromRgb(0, 255, 0) };
+            axesColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(64, 64, 64) };
+            axesLabelsOutOfRange = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(128,128, 128) };
+            majorGridColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(192, 192, 192) };
+            minorGridColour = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(224, 224, 224) };
+            BSPLineInvalid = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(255, 0, 0) };
+            BSPLineValid = new SolidColorBrush() { Color = System.Windows.Media.Color.FromRgb(0, 255, 0) };
 
             calculator = new FreeformCalculator();
             calculator.Input = "";
@@ -214,6 +221,13 @@ namespace calculator_gui
 
         private void UpdateFrame()
         {
+            if (App.MainApp.performanceStatsEnabled)
+            {
+                calculationStopwatch = new Stopwatch();
+                renderingStopwatch = new Stopwatch();
+                totalStopwatch = new Stopwatch();
+                totalStopwatch.Start();
+            }
             if (App.MainApp.useAutoBSPDepth)
             {
                 maxDepth = absoluteMaxDepth;
@@ -222,16 +236,58 @@ namespace calculator_gui
             {
                 maxDepth = App.MainApp.maxBSPDepth;
             }
+
+            if (App.MainApp.performanceStatsEnabled)
+            {
+                renderingStopwatch.Start();
+            }
             canvas.Children.Clear();
             DrawAxes();
+            if (App.MainApp.performanceStatsEnabled)
+            {
+                renderingStopwatch.Stop();
+            }
+
             if (calculator.isValidExpression)
             {
+                if (App.MainApp.performanceStatsEnabled)
+                {
+                    calculationStopwatch.Start();
+                }
                 bspRoot = BSP();
+                if (App.MainApp.performanceStatsEnabled)
+                {
+                    calculationStopwatch.Stop();
+                }
+
+                if (App.MainApp.performanceStatsEnabled)
+                {
+                    renderingStopwatch.Start();
+                }
                 DrawGraph(bspRoot);
                 if (App.MainApp.viewGraphBSP)
                 {
                     DrawBSP(bspRoot);
                 }
+                if (App.MainApp.performanceStatsEnabled)
+                {
+                    renderingStopwatch.Stop();
+                }
+            }
+
+            if (App.MainApp.performanceStatsEnabled)
+            {
+                totalStopwatch.Stop();
+                TextBlock textBlock = new TextBlock();
+                textBlock.Text = "Calculation: " + calculationStopwatch.ElapsedMilliseconds.ToString() + "ms\n"
+                    + "Rendering: " + renderingStopwatch.ElapsedMilliseconds.ToString() + "ms\n"
+                    + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms";
+                textBlock.Foreground = axesColour;
+                canvas.Children.Add(textBlock);
+                textBlock.Measure(new System.Windows.Size(Single.PositiveInfinity, Single.PositiveInfinity));
+                System.Windows.Size textSize = textBlock.DesiredSize;
+                Canvas.SetTop(textBlock, 5);
+                Canvas.SetLeft(textBlock, 5);
             }
         }
 
@@ -284,8 +340,8 @@ namespace calculator_gui
             textBlock.Text = text;
             textBlock.Foreground = colour;
             canvas.Children.Add(textBlock);
-            textBlock.Measure(new Size(Single.PositiveInfinity, Single.PositiveInfinity));
-            Size textSize = textBlock.DesiredSize;
+            textBlock.Measure(new System.Windows.Size(Single.PositiveInfinity, Single.PositiveInfinity));
+            System.Windows.Size textSize = textBlock.DesiredSize;
             Canvas.SetTop(textBlock, RealiseY(y) - realOffsetY - textSize.Height / 2);
             Canvas.SetLeft(textBlock, RealiseX(x) + realOffsetX - textSize.Width / 2);
         }

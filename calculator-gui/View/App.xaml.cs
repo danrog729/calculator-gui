@@ -40,6 +40,7 @@ namespace calculator_gui
         public bool viewGraphBSP; // shows the lines of the quadtree
         public bool useAutoBSPDepth = false;
         public int maxBSPDepth;
+        public bool performanceStatsEnabled;
 
         public App()
         {

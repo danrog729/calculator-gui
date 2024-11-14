@@ -87,6 +87,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Compile Include="BitmapRendering.cs" />
     <Compile Include="Grapher.cs" />
     <Compile Include="IntervalArithmetic.cs" />
     <Compile Include="View\ProgrammerCalculator.xaml.cs">

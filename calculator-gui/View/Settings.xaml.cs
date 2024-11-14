@@ -66,6 +66,11 @@ namespace calculator_gui
             }
         }
 
+        public void PerformanceStatsChanged(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.performanceStatsEnabled = !App.MainApp.performanceStatsEnabled;
+        }
+
         public void TitleBar_Dragged(object sender, MouseButtonEventArgs e)
         {
             this.DragMove();
