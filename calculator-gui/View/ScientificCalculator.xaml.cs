@@ -83,5 +83,12 @@ namespace calculator_gui
                 mouseWasDown = false;
             }
         }
+
+        public void AddNewEquation(object sender, RoutedEventArgs e)
+        {
+            EquationList.Children.Insert(
+                EquationList.Children.Count - 1, 
+                new EquationBox() { Margin=new Thickness(0, 5, 0, 5) } );
+        }
     }
 }

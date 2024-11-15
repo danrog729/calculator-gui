@@ -59,6 +59,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="View\EquationBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\ProgrammerCalculator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -88,6 +92,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Include="BitmapRendering.cs" />
+    <Compile Include="View\EquationBox.xaml.cs">
+      <DependentUpon>EquationBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Grapher.cs" />
     <Compile Include="IntervalArithmetic.cs" />
     <Compile Include="View\ProgrammerCalculator.xaml.cs">

@@ -14,7 +14,7 @@
             <RowDefinition Height="5"/>
             <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
-        <Border Name="ImageBorder" Style="{DynamicResource Border}" Margin="5,5,5,10">
+        <Border Name="ImageBorder" Style="{DynamicResource Border}" Margin="5,5,5,10" SizeChanged="ImageSize_Changed">
             <!--Canvas Name="OutputCanvas" Background="White" ClipToBounds="True"
                     SizeChanged="CanvasSize_Changed" 
                     MouseWheel="CanvasZoom" 
@@ -30,17 +30,9 @@
                       Background="{DynamicResource Foreground}"
                       HorizontalAlignment="Stretch" Height="5" Margin="10,0,10,0"/>
         <ScrollViewer Grid.Row="2" Margin="5" Style="{DynamicResource ScrollViewer}">
-            <StackPanel>
-                <Border Style="{DynamicResource Border}" Margin="0,5,0,5">
-                    <StackPanel Orientation="Horizontal">
-                        <Button Style="{DynamicResource InvisibleButton}" Width="20">👁</Button>
-                        <Button Style="{DynamicResource InvisibleButton}" Width="20">
-                            <Ellipse Width="16" Height="16" Stroke="{DynamicResource BorderColour}" StrokeThickness="1" Margin="2" Fill="Black"/>
-                        </Button>
-                        <Rectangle Width="1" Fill="{DynamicResource BorderColour}"/>
-                        <TextBox Name="Equation" Grid.Column="1" Margin="10" MinWidth="100" Style="{DynamicResource TextBox}" TextChanged="EquationTextChanged"/>
-                    </StackPanel>
-                </Border>
+            <StackPanel Name="EquationList">
+                <local:EquationBox Margin="0,5,0,5" x:Name="Equation" TextChanged="EquationTextChanged"/>
+                <Button Margin="0,5,0,5" Height="40" Style="{DynamicResource ImportantButton}" FontSize="20" Click="AddNewEquation">+</Button>
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -538,7 +538,10 @@ namespace calculator_gui
 
         private void DrawBSP(BSPNode root)
         {
-            DrawBSPNode(ref root);
+            if (root.children.Count == 0)
+            {
+                DrawBSPNode(ref root);
+            }
             for (int index = 0; index < root.children.Count; index++)
             {
                 DrawBSP(root.children[index]);
