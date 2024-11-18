@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace calculator_gui
 {
@@ -27,14 +28,7 @@ namespace calculator_gui
         private int majorGridXPowerOfTen = 0;
         private int majorGridYPowerOfTen = 0;
 
-        public Color axesColour;
-        public Color axesLabelsOutOfRange;
-        public Color majorGridColour;
-        public Color minorGridColour;
         public Color transparent = Color.Transparent;
-        public Color black = Color.Black;
-        public Color BSPLineInvalid;
-        public Color BSPLineValid;
 
         private System.Windows.Controls.Image image;
         private BitmapRenderer renderer;
@@ -61,13 +55,6 @@ namespace calculator_gui
             maxX = 10;
             minY = -10;
             maxY = 10;
-
-            axesColour = Color.FromArgb(64, 64, 64);
-            axesLabelsOutOfRange = Color.FromArgb(128, 128, 128);
-            majorGridColour = Color.FromArgb(192, 192, 192);
-            minorGridColour = Color.FromArgb(224, 224, 224);
-            BSPLineInvalid = Color.FromArgb(255, 0, 0);
-            BSPLineValid = Color.FromArgb(0, 255, 0);
 
             calculator = new FreeformCalculator();
             calculator.Input = "";
@@ -245,7 +232,7 @@ namespace calculator_gui
 
             renderingStopwatch.Start();
             axesStopwatch.Start();
-            renderer.Fill(Color.White);
+            renderer.Fill(App.MainApp.graphingColours.background);
             DrawAxes();
             renderingStopwatch.Stop();
             axesStopwatch.Stop();
@@ -277,17 +264,17 @@ namespace calculator_gui
                     + "    Curve: " + curveStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)curveStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
                     + "    BSP Lines: " + BSPLineStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)BSPLineStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
                     + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms",
-                    ref black);
+                    ref App.MainApp.graphingColours.performanceStats);
             }
         }
 
         private void DrawAxes()
         {
-            DrawGrid(minorGridXStep, minorGridYStep, ref minorGridColour, 1);
-            DrawGrid(majorGridXStep, majorGridYStep, ref majorGridColour, 1);
+            DrawGrid(minorGridXStep, minorGridYStep, ref App.MainApp.graphingColours.minorGridColour, 1);
+            DrawGrid(majorGridXStep, majorGridYStep, ref App.MainApp.graphingColours.majorGridColour, 1);
 
-            DrawVerticalVirtualLine(0, ref axesColour, 2);
-            DrawHorizontalVirtualLine(0, ref axesColour, 2);
+            DrawVerticalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
+            DrawHorizontalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
 
             DrawAxesLabels();
         }
@@ -341,35 +328,35 @@ namespace calculator_gui
             float originY = 0;
             int originOffsetX = -10;
             int originOffsetY = -10;
-            ref Color colour = ref axesColour;
+            ref Color colour = ref App.MainApp.graphingColours.axesColour;
             if (realOriginX < 0)
             {
                 originX = minX;
                 originOffsetX = 10;
-                colour = ref axesLabelsOutOfRange;
+                colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
             }
             else if (realOriginX > pixelWidth)
             {
                 originX = maxX;
                 originOffsetX = -10;
-                colour = ref axesLabelsOutOfRange;
+                colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
             }
             if (realOriginY < 0)
             {
                 originY = maxY;
                 originOffsetY = -10;
-                colour = ref axesLabelsOutOfRange;
+                colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
             }
             else if (realOriginY > pixelHeight)
             {
                 originY = minY;
                 originOffsetY = 10;
-                colour = ref axesLabelsOutOfRange;
+                colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
             }
             DrawVirtualLabel(originX, originY, originOffsetX, originOffsetY, "0", ref colour);
 
 
-            colour = ref axesColour;
+            colour = ref App.MainApp.graphingColours.axesColour;
             string decimalPlaces = "n0";
             if (majorGridXPowerOfTen < 0)
             {
@@ -386,20 +373,20 @@ namespace calculator_gui
                     {
                         yValue = maxY;
                         offset = -10;
-                        colour = ref axesLabelsOutOfRange;
+                        colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
                     }
                     else if (realOriginY > pixelHeight)
                     {
                         yValue = minY;
                         offset = 10;
-                        colour = ref axesLabelsOutOfRange;
+                        colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
                     }
                     DrawVirtualLabel(x, yValue, 0, offset, x.ToString(decimalPlaces), ref colour);
                 }
                 x += majorGridXStep;
             }
 
-            colour = ref axesColour;
+            colour = ref App.MainApp.graphingColours.axesColour;
             decimalPlaces = "n0";
             if (majorGridYPowerOfTen < 0)
             {
@@ -416,13 +403,13 @@ namespace calculator_gui
                     {
                         xValue = minX;
                         offset = 10;
-                        colour = ref axesLabelsOutOfRange;
+                        colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
                     }
                     else if (realOriginX > pixelWidth)
                     {
                         xValue = maxX;
                         offset = -10;
-                        colour = ref axesLabelsOutOfRange;
+                        colour = ref App.MainApp.graphingColours.axesLabelsOutOfRange;
                     }
                     DrawVirtualLabel(xValue, y, offset, 0, y.ToString(decimalPlaces), ref colour);
                 }
@@ -532,7 +519,7 @@ namespace calculator_gui
             int realYMax = RealiseY(node.yMax);
             if (node.containsGraph && node.children.Count == 0)
             {
-                renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref axesColour);
+                renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref App.MainApp.graphingColours.axesColour);
             }
         }
 
@@ -556,11 +543,11 @@ namespace calculator_gui
             int realYMax = RealiseY(node.yMax);
             if (node.containsGraph)
             {
-                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineValid, 1);
+                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref App.MainApp.graphingColours.BSPLineValid, 1);
             }
             else
             {
-                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref BSPLineInvalid, 1);
+                renderer.DrawBorder(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref App.MainApp.graphingColours.BSPLineInvalid, 1);
             }
         }
     }
@@ -573,5 +560,46 @@ namespace calculator_gui
         public float yMax;
         public bool containsGraph = true;
         public List<BSPNode> children = new List<BSPNode>();
+    }
+
+    public class GraphingColours
+    {
+        public Color background;
+        public Color axesColour;
+        public Color axesLabelsOutOfRange;
+        public Color majorGridColour;
+        public Color minorGridColour;
+        public Color performanceStats;
+        public Color BSPLineInvalid;
+        public Color BSPLineValid;
+
+        public void UpdateColours()
+        {
+            System.Windows.Media.Color importColour;
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphBackground");
+            background = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphAxes");
+            axesColour = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphAxesLabelsOutOfRange");
+            axesLabelsOutOfRange = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphMajorGrid");
+            majorGridColour = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphMinorGrid");
+            minorGridColour = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphPerformanceStats");
+            performanceStats = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphBSPLineInvalid");
+            BSPLineInvalid = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+
+            importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphBSPLineValid");
+            BSPLineValid = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+        }
     }
 }

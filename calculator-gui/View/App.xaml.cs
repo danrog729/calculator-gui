@@ -20,6 +20,7 @@ namespace calculator_gui
 
         public List<Theme> themes = new List<Theme>();
         private Theme _currentTheme;
+        public GraphingColours graphingColours;
 
         public Sound clickSound;
 
@@ -37,6 +38,7 @@ namespace calculator_gui
                 //Resources.Clear();
                 //Resources.MergedDictionaries.Clear();
                 //Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri(_currentTheme.Path, UriKind.Relative) });
+                graphingColours.UpdateColours();
             }
         }
 
@@ -49,6 +51,8 @@ namespace calculator_gui
         public App()
         {
             InitializeComponent();
+
+            graphingColours = new GraphingColours();
 
             themes.Add(new Theme() { Name = "Light", Path = "View/Themes/Light.xaml" });
             themes.Add(new Theme() { Name = "Dark", Path = "View/Themes/Dark.xaml" });

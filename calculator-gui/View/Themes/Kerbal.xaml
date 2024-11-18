@@ -72,4 +72,13 @@
     <SolidColorBrush x:Key="FocusedAccentText" Color="#EFFFDF"/>
     <FontFamily x:Key="Font">Corbel Bold</FontFamily>
 
+    <Color x:Key="GraphBackground"              A="#FF" R="#1F" G="#C0" B="#CF"/>
+    <Color x:Key="GraphAxes"                    A="#FF" R="#42" G="#F7" B="#FF"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange"    A="#FF" R="#42" G="#F7" B="#FF"/>
+    <Color x:Key="GraphMajorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
+    <Color x:Key="GraphMinorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
+    <Color x:Key="GraphPerformanceStats"        A="#FF" R="#F0" G="#F0" B="#F0"/>
+    <Color x:Key="GraphBSPLineInvalid"          A="#FF" R="#FF" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineValid"            A="#FF" R="#00" G="#FF" B="#00"/>
+
 </ResourceDictionary>
