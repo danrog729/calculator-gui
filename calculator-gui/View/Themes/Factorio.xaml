@@ -41,4 +41,14 @@
     <SolidColorBrush x:Key="AccentText" Color="#1D1D1D"/>
     <SolidColorBrush x:Key="FocusedAccentText" Color="#1D1D1D"/>
     <FontFamily x:Key="Font">pack://application:,,,/View/Themes/Fonts/#Titillium Web</FontFamily>
+
+    <Color x:Key="GraphBackground"              A="#FF" R="#11" G="#11" B="#11"/>
+    <Color x:Key="GraphAxes"                    A="#FF" R="#C0" G="#C0" B="#C0"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange"    A="#FF" R="#57" G="#57" B="#57"/>
+    <Color x:Key="GraphMajorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
+    <Color x:Key="GraphMinorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
+    <Color x:Key="GraphPerformanceStats"        A="#FF" R="#F0" G="#F0" B="#F0"/>
+    <Color x:Key="GraphBSPLineInvalid"          A="#FF" R="#FF" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineValid"            A="#FF" R="#00" G="#FF" B="#00"/>
+    
 </ResourceDictionary>

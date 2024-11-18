@@ -86,8 +86,9 @@ namespace calculator_gui
         public void AddNewEquation(object sender, RoutedEventArgs e)
         {
             EquationBox equationBox = new EquationBox();
-            equationBox.Margin=new Thickness(0, 5, 0, 5);
+            equationBox.Margin = new Thickness(0, 5, 0, 5);
             equationBox.TextChanged += EquationTextChanged;
+            App.MainApp.clickSound.Play();
             EquationList.Children.Insert(
                 EquationList.Children.Count - 1, equationBox);
         }

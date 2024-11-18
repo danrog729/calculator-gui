@@ -58,4 +58,13 @@
     
     <FontFamily x:Key="Font">Comic Sans MS</FontFamily>
 
+    <Color x:Key="GraphBackground" A="#FF" R="#C0" G="#FF" B="#FF"/>
+    <Color x:Key="GraphAxes" A="#FF" R="#FF" G="#00" B="#FF"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange" A="#80" R="#FF" G="00" B="#00"/>
+    <Color x:Key="GraphMajorGrid" A="#FF" R="#80" G="#80" B="#80"/>
+    <Color x:Key="GraphMinorGrid" A="#FF" R="#40" G="#80" B="#40"/>
+    <Color x:Key="GraphPerformanceStats" A="#FF" R="#00" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineInvalid" A="#FF" R="#FF" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineValid" A="#FF" R="#00" G="#FF" B="#00"/>
+
 </ResourceDictionary>

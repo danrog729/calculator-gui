@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics.Eventing.Reader;
+using System.Windows.Media;
 
 namespace calculator_gui
 {
@@ -19,6 +20,10 @@ namespace calculator_gui
 
         public List<Theme> themes = new List<Theme>();
         private Theme _currentTheme;
+        public GraphingColours graphingColours;
+
+        public Sound clickSound;
+
         public Theme CurrentTheme
         {
             get => _currentTheme;
@@ -33,6 +38,7 @@ namespace calculator_gui
                 //Resources.Clear();
                 //Resources.MergedDictionaries.Clear();
                 //Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri(_currentTheme.Path, UriKind.Relative) });
+                graphingColours.UpdateColours();
             }
         }
 
@@ -45,6 +51,9 @@ namespace calculator_gui
         public App()
         {
             InitializeComponent();
+
+            graphingColours = new GraphingColours();
+
             themes.Add(new Theme() { Name = "Light", Path = "View/Themes/Light.xaml" });
             themes.Add(new Theme() { Name = "Dark", Path = "View/Themes/Dark.xaml" });
             themes.Add(new Theme() { Name = "High Contrast Light", Path = "View/Themes/HighContrastLight.xaml" });
@@ -54,6 +63,8 @@ namespace calculator_gui
             themes.Add(new Theme() { Name = "Space Age", Path = "View/Themes/Kerbal.xaml" });
             themes.Add(new Theme() { Name = "Programmer", Path = "View/Themes/Perry.xaml" });
             CurrentTheme = themes[0];
+
+            clickSound = new Sound("View/Themes/Sounds/click.wav");
         }
     }
 
@@ -61,5 +72,42 @@ namespace calculator_gui
     {
         public string Name;
         public string Path;
+    }
+
+    public class Sound
+    {
+        private string _path;
+        public string Path
+        {
+            get => _path;
+            set
+            {
+                _path = value;
+                Uri uri = new Uri(_path, UriKind.Relative);
+                player = new MediaPlayer();
+                player.Open(uri);
+            }
+        }
+        private MediaPlayer player;
+
+        public Sound(string newPath)
+        {
+            Path = newPath;
+        }
+
+        public void Play()
+        {
+            player.Play();
+        }
+
+        public void Stop()
+        {
+            player.Stop();
+        }
+
+        public void Pause()
+        {
+            player.Pause();
+        }
     }
 }

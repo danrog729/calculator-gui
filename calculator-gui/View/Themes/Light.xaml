@@ -20,4 +20,13 @@
     <SolidColorBrush x:Key="FocusedAccentText" Color="#000000"/>
     <FontFamily x:Key="Font">Segoe UI</FontFamily>
 
+    <Color x:Key="GraphBackground" A="#FF" R="#FF" G="#FF" B="#FF"/>
+    <Color x:Key="GraphAxes" A="#FF" R="#40" G="#40" B="#40"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange" A="#80" R="#80" G="#80" B="#80"/>
+    <Color x:Key="GraphMajorGrid" A="#FF" R="#C0" G="#C0" B="#C0"/>
+    <Color x:Key="GraphMinorGrid" A="#FF" R="#E0" G="#E0" B="#E0"/>
+    <Color x:Key="GraphPerformanceStats" A="#FF" R="#00" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineInvalid" A="#FF" R="#FF" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineValid" A="#FF" R="#00" G="#FF" B="#00"/>
+
 </ResourceDictionary>
