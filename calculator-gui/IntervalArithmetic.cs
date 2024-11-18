@@ -113,7 +113,7 @@ namespace calculator_gui
         /// <returns>The range of x^y</returns>
         public static Interval Exponentiation(Interval a, Interval b)
         {
-            if (a.Minimum < 0 && b.Minimum == b.Maximum && ((int)Math.Round(b.Minimum)) % 2 == 0)
+            if (a.Minimum < 0 && b.Minimum == b.Maximum)
             {
                 // [x]^a
                 // this only handles the cases that arent also handled in the more general [x]^[y] case
@@ -123,11 +123,21 @@ namespace calculator_gui
                 }
                 else if (a.Minimum < 0 && a.Maximum > 0 && ((int)Math.Round(b.Minimum)) % 2 == 0)
                 {
-                    return new Interval(0, Math.Max(Math.Pow(a.Minimum, b.Minimum), Math.Pow(a.Maximum, b.Minimum)));
+                    double minimum = Math.Pow(a.Minimum, b.Minimum);
+                    if (Double.IsNaN(minimum))
+                    {
+                        minimum = 0;
+                    }
+                    return new Interval(0, Math.Max(minimum, Math.Pow(a.Maximum, b.Minimum)));
                 }
                 else
                 {
-                    return new Interval(Math.Pow(a.Minimum, b.Minimum), Math.Pow(a.Maximum, b.Minimum));
+                    double minimum = Math.Pow(a.Minimum, b.Minimum);
+                    if (Double.IsNaN(minimum))
+                    {
+                        minimum = 0;
+                    }
+                    return new Interval(minimum, Math.Pow(a.Maximum, b.Minimum));
                 }
             }
             else if (a.Minimum >= 0)
@@ -149,7 +159,12 @@ namespace calculator_gui
                 }
                 else
                 {
-                    return new Interval(Math.Pow(a.Maximum, b.Minimum), Math.Pow(a.Minimum, b.Maximum));
+                    double minimum = Math.Pow(a.Maximum, b.Minimum);
+                    if (Double.IsNaN(minimum))
+                    {
+                        minimum = 0;
+                    }
+                    return new Interval(minimum, Math.Pow(a.Minimum, b.Maximum));
                 }
             }
             else
@@ -490,12 +505,18 @@ namespace calculator_gui
         public static MultiInterval Logarithm(MultiInterval value, MultiInterval newBase)
         {
             MultiInterval output = new MultiInterval();
+            output.Intervals.Clear();
             foreach (Interval valueInterval in value.Intervals)
             {
                 foreach (Interval baseInterval in newBase.Intervals)
                 {
+                    double minimum = valueInterval.Minimum;
+                    if (valueInterval.Minimum <= 0)
+                    {
+                        minimum = 0;
+                    }
                     output |= (MultiInterval)(
-                        new Interval(Math.Log(valueInterval.Minimum), Math.Log(valueInterval.Maximum))) / 
+                        new Interval(Math.Log(minimum), Math.Log(valueInterval.Maximum))) / 
                         new Interval(Math.Log(baseInterval.Minimum), Math.Log(baseInterval.Maximum));
                 }
             }
@@ -783,16 +804,16 @@ namespace calculator_gui
                     outputBoundaries.Add(list[overlapIndex]);
                 }
             }
-            if (outputBoundaries.Count >= 2 && outputBoundaries[0] == outputBoundaries[1])
-            {
-                outputBoundaries.RemoveAt(0);
-                outputBoundaries.RemoveAt(0);
-            }
-            if (outputBoundaries.Count >= 2 && outputBoundaries[outputBoundaries.Count - 1] == outputBoundaries[outputBoundaries.Count - 2])
-            {
-                outputBoundaries.RemoveAt(outputBoundaries.Count - 1);
-                outputBoundaries.RemoveAt(outputBoundaries.Count - 1);
-            }
+            //if (outputBoundaries.Count >= 2 && outputBoundaries[0] == outputBoundaries[1])
+            //{
+            //    outputBoundaries.RemoveAt(0);
+            //    outputBoundaries.RemoveAt(0);
+            //}
+            //if (outputBoundaries.Count >= 2 && outputBoundaries[outputBoundaries.Count - 1] == outputBoundaries[outputBoundaries.Count - 2])
+            //{
+            //    outputBoundaries.RemoveAt(outputBoundaries.Count - 1);
+            //    outputBoundaries.RemoveAt(outputBoundaries.Count - 1);
+            //}
 
             MultiInterval output = new MultiInterval();
             output.Intervals.Clear();

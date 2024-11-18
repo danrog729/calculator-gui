@@ -1128,7 +1128,7 @@ namespace calculator_gui
             else if (input1 is FloatToken && input2 is IntervalToken)
             {
                 return new IntervalToken(((IntervalToken)input2).identifier, 
-                    MultiInterval.Exponentiation(((IntervalToken)input2).interval, (Interval)((FloatToken)input1).value));
+                    MultiInterval.Exponentiation((Interval)((FloatToken)input1).value, ((IntervalToken)input2).interval));
             }
             else if (input1 is IntervalToken && input2 is FloatToken)
             {

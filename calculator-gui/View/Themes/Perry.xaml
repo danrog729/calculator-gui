@@ -20,4 +20,13 @@
     <SolidColorBrush x:Key="FocusedAccentText" Color="#000000"/>
     <FontFamily x:Key="Font">Comic Sans MS</FontFamily>
 
+    <Color x:Key="GraphBackground"              A="#FF" R="#FF" G="#EF" B="#E7"/>
+    <Color x:Key="GraphAxes"                    A="#FF" R="#FF" G="#99" B="#00"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange"    A="#FF" R="#00" G="#00" B="#00"/>
+    <Color x:Key="GraphMajorGrid"               A="#FF" R="#FF" G="#FF" B="#FF"/>
+    <Color x:Key="GraphMinorGrid"               A="#FF" R="#FF" G="#DE" B="#CB"/>
+    <Color x:Key="GraphPerformanceStats"        A="#FF" R="#00" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineInvalid"          A="#FF" R="#FF" G="#00" B="#00"/>
+    <Color x:Key="GraphBSPLineValid"            A="#FF" R="#00" G="#FF" B="#00"/>
+
 </ResourceDictionary>

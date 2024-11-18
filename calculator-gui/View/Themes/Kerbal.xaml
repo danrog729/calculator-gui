@@ -72,12 +72,12 @@
     <SolidColorBrush x:Key="FocusedAccentText" Color="#EFFFDF"/>
     <FontFamily x:Key="Font">Corbel Bold</FontFamily>
 
-    <Color x:Key="GraphBackground"              A="#FF" R="#1F" G="#C0" B="#CF"/>
-    <Color x:Key="GraphAxes"                    A="#FF" R="#42" G="#F7" B="#FF"/>
-    <Color x:Key="GraphAxesLabelsOutOfRange"    A="#FF" R="#42" G="#F7" B="#FF"/>
-    <Color x:Key="GraphMajorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
-    <Color x:Key="GraphMinorGrid"               A="#FF" R="#21" G="#21" B="#21"/>
-    <Color x:Key="GraphPerformanceStats"        A="#FF" R="#F0" G="#F0" B="#F0"/>
+    <Color x:Key="GraphBackground"              A="#FF" R="#4A" G="#56" B="#62"/>
+    <Color x:Key="GraphAxes"                    A="#FF" R="#F1" G="#8E" B="#00"/>
+    <Color x:Key="GraphAxesLabelsOutOfRange"    A="#FF" R="#BE" G="#BF" B="#C0"/>
+    <Color x:Key="GraphMajorGrid"               A="#FF" R="#BE" G="#BF" B="#C0"/>
+    <Color x:Key="GraphMinorGrid"               A="#FF" R="#84" G="#84" B="#85"/>
+    <Color x:Key="GraphPerformanceStats"        A="#FF" R="#D1" G="#D1" B="#D2"/>
     <Color x:Key="GraphBSPLineInvalid"          A="#FF" R="#FF" G="#00" B="#00"/>
     <Color x:Key="GraphBSPLineValid"            A="#FF" R="#00" G="#FF" B="#00"/>
 
