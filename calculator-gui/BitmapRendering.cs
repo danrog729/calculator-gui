@@ -62,6 +62,44 @@ namespace calculator_gui
             bitmap.Unlock();
         }
 
+        public void DrawLine(int startX, int startY, int endX, int endY, ref System.Drawing.Color colour, int thickness)
+        {
+            int minX = startX;
+            int minY = startY;
+            int maxX = endX;
+            int maxY = endY;
+            if (endX < startX)
+            {
+                minX = endX;
+                maxX = startX;
+            }
+            if (endY < startY)
+            {
+                minY = endY;
+                maxY = startY;
+            }
+            if (minX < 0)
+            {
+                minX = 0;
+            }
+            if (minY < 0)
+            {
+                minY = 0;
+            }
+            if (maxX >= bitmap.PixelWidth)
+            {
+                maxX = bitmap.PixelWidth - 1;
+            }
+            if (maxY >= bitmap.PixelHeight)
+            {
+                maxY = bitmap.PixelHeight - 1;
+            }
+            bitmap.Lock();
+            graphics.DrawLine(new System.Drawing.Pen(colour, thickness), startX, startY, endX, endY);
+            bitmap.AddDirtyRect(new System.Windows.Int32Rect(minX, minY, maxX - minX, maxY - minY));
+            bitmap.Unlock();
+        }
+
         public void DrawText(int x, int y, string text, ref System.Drawing.Color colour)
         {
             if (x < 0 || x >= bitmap.PixelWidth || y < 0 || y >= bitmap.PixelHeight)

@@ -31,13 +31,12 @@ namespace calculator_gui
         public ScientificCalculator()
         {
             InitializeComponent();
-            //grapher = new Graph(ref OutputCanvas);
             grapher = new Grapher(ref OutputImage);
         }
 
         public void EquationTextChanged(object sender, EventArgs e)
         {
-            grapher.NewEquation(Equation.Text);
+            grapher.NewEquation(((EquationBox)sender).Text);
         }
 
         public void ImageSize_Changed(object sender, SizeChangedEventArgs e)
@@ -86,9 +85,11 @@ namespace calculator_gui
 
         public void AddNewEquation(object sender, RoutedEventArgs e)
         {
+            EquationBox equationBox = new EquationBox();
+            equationBox.Margin=new Thickness(0, 5, 0, 5);
+            equationBox.TextChanged += EquationTextChanged;
             EquationList.Children.Insert(
-                EquationList.Children.Count - 1, 
-                new EquationBox() { Margin=new Thickness(0, 5, 0, 5) } );
+                EquationList.Children.Count - 1, equationBox);
         }
     }
 }

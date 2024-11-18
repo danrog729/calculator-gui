@@ -31,7 +31,6 @@
                       HorizontalAlignment="Stretch" Height="5" Margin="10,0,10,0"/>
         <ScrollViewer Grid.Row="2" Margin="5" Style="{DynamicResource ScrollViewer}">
             <StackPanel Name="EquationList">
-                <local:EquationBox Margin="0,5,0,5" x:Name="Equation" TextChanged="EquationTextChanged"/>
                 <Button Margin="0,5,0,5" Height="40" Style="{DynamicResource ImportantButton}" FontSize="20" Click="AddNewEquation">+</Button>
             </StackPanel>
         </ScrollViewer>
