@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+using System.ComponentModel;
 
 namespace calculator_gui
 {
@@ -28,27 +24,42 @@ namespace calculator_gui
         private int majorGridXPowerOfTen = 0;
         private int majorGridYPowerOfTen = 0;
 
-        public Color transparent = Color.Transparent;
+        private Color transparent = Color.Transparent;
 
         private System.Windows.Controls.Image image;
         private BitmapRenderer renderer;
         private FreeformCalculator calculator;
 
-        Stopwatch calculationStopwatch;
-        Stopwatch renderingStopwatch;
-        Stopwatch axesStopwatch;
-        Stopwatch curveStopwatch;
-        Stopwatch BSPLineStopwatch;
-        Stopwatch totalStopwatch;
+        private Stopwatch calculationStopwatch;
+        private Stopwatch renderingStopwatch;
+        private Stopwatch axesStopwatch;
+        private Stopwatch curveStopwatch;
+        private Stopwatch BSPLineStopwatch;
+        private Stopwatch compositingStopwatch;
+        private Stopwatch totalStopwatch;
 
-        BSPNode bspRoot;
+        private BSPNode bspRoot;
         private int absoluteMaxDepth = 0;
         private int maxDepth = 5;
+
+        private BackgroundWorker axesWorker;
+        private BitmapRenderer axesRendererOutput;
+
+        private BackgroundWorker graphRenderWorker;
+        private BitmapRenderer graphRendererOutput;
+
+        private BackgroundWorker BSPRenderWorker;
+        private BitmapRenderer BSPRendererOutput;
+
+        private BackgroundWorker calculationWorker;
 
         public Grapher(ref System.Windows.Controls.Image newImage)
         {
             image = newImage;
             renderer = new BitmapRenderer(100, 100);
+            axesRendererOutput = new BitmapRenderer(100, 100);
+            graphRendererOutput = new BitmapRenderer(100, 100);
+            BSPRendererOutput = new BitmapRenderer(100, 100);
             image.Source = renderer.bitmap;
 
             minX = -10;
@@ -63,10 +74,31 @@ namespace calculator_gui
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
                     Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
+
+            bspRoot = new BSPNode();
+
+            axesWorker = new BackgroundWorker();
+            axesWorker.DoWork += DrawAxes;
+            axesWorker.RunWorkerCompleted += DrawAxesCompleted;
+
+            graphRenderWorker = new BackgroundWorker();
+            graphRenderWorker.DoWork += DrawGraph;
+            graphRenderWorker.RunWorkerCompleted += DrawGraphCompleted;
+
+            BSPRenderWorker = new BackgroundWorker();
+            BSPRenderWorker.DoWork += DrawBSP;
+            BSPRenderWorker.RunWorkerCompleted += DrawBSPCompleted;
+
+            calculationWorker = new BackgroundWorker();
+            calculationWorker.DoWork += StartBSP;
+            calculationWorker.RunWorkerCompleted += EndBSP;
         }
 
         public void SizeChanged(int newWidth, int newHeight)
         {
+            renderer = new BitmapRenderer(newWidth, newHeight);
+            renderer.Fill(App.MainApp.graphingColours.background);
+            image.Source = renderer.bitmap;
             if (pixelWidth != 0 && pixelHeight != 0)
             {
                 float middleX = (minX + maxX) / 2;
@@ -99,8 +131,6 @@ namespace calculator_gui
             }
             pixelWidth = newWidth;
             pixelHeight = newHeight;
-            renderer = new BitmapRenderer(pixelWidth, pixelHeight);
-            image.Source = renderer.bitmap;
             absoluteMaxDepth =
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
@@ -216,9 +246,9 @@ namespace calculator_gui
             axesStopwatch = new Stopwatch();
             curveStopwatch = new Stopwatch();
             BSPLineStopwatch = new Stopwatch();
+            compositingStopwatch = new Stopwatch();
             totalStopwatch = new Stopwatch();
             totalStopwatch.Start();
-
 
             if (App.MainApp.useAutoBSPDepth)
             {
@@ -229,57 +259,337 @@ namespace calculator_gui
                 maxDepth = App.MainApp.maxBSPDepth;
             }
 
-
-            renderingStopwatch.Start();
-            axesStopwatch.Start();
-            renderer.Fill(App.MainApp.graphingColours.background);
-            DrawAxes();
-            renderingStopwatch.Stop();
-            axesStopwatch.Stop();
+            if (!axesWorker.IsBusy)
+            {
+                axesWorker.RunWorkerAsync();
+            }
 
             if (calculator.isValidExpression)
             {
-                calculationStopwatch.Start();
-                bspRoot = BSP();
-                calculationStopwatch.Stop();
-                renderingStopwatch.Start();
-                curveStopwatch.Start();
-                DrawGraph(bspRoot);
-                curveStopwatch.Stop();
+                if (!calculationWorker.IsBusy)
+                {
+                    calculationWorker.RunWorkerAsync();
+                }
+
+                if (!graphRenderWorker.IsBusy)
+                {
+                    graphRenderWorker.RunWorkerAsync(bspRoot);
+                }
+
                 if (App.MainApp.viewGraphBSP)
                 {
-                    BSPLineStopwatch.Start();
-                    DrawBSP(bspRoot);
-                    BSPLineStopwatch.Stop();
+                    if (!BSPRenderWorker.IsBusy)
+                    {
+                        BSPRenderWorker.RunWorkerAsync(bspRoot);
+                    }
                 }
-                renderingStopwatch.Stop();
             }
+            totalStopwatch.Stop();
+        }
+
+        private void CompositeImage()
+        {
+            totalStopwatch.Start();
+            renderingStopwatch.Start();
+            compositingStopwatch.Start();
+
+            renderer.OverlayBitmapRenderer(ref axesRendererOutput);
+            if (calculator.isValidExpression)
+            {
+                renderer.OverlayBitmapRenderer(ref graphRendererOutput);
+            }
+            if (App.MainApp.viewGraphBSP)
+            {
+                renderer.OverlayBitmapRenderer(ref BSPRendererOutput);
+            }
+
+            compositingStopwatch.Stop();
+            renderingStopwatch.Stop();
             totalStopwatch.Stop();
 
             if (App.MainApp.performanceStatsEnabled)
             {
-                renderer.DrawText(5, 5, "Calculation: " + calculationStopwatch.ElapsedMilliseconds.ToString() + "ms (" + Math.Round(((double)calculationStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
-                    + "Rendering: " + renderingStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)renderingStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
-                    + "    Axes: " + axesStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)axesStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
-                    + "    Curve: " + curveStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)curveStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
-                    + "    BSP Lines: " + BSPLineStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)BSPLineStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
-                    + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms",
-                    ref App.MainApp.graphingColours.performanceStats);
+                DrawPerformanceStats();
             }
         }
 
-        private void DrawAxes()
+        private float VirtualiseX(int x)
         {
-            DrawGrid(minorGridXStep, minorGridYStep, ref App.MainApp.graphingColours.minorGridColour, 1);
-            DrawGrid(majorGridXStep, majorGridYStep, ref App.MainApp.graphingColours.majorGridColour, 1);
-
-            DrawVerticalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
-            DrawHorizontalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
-
-            DrawAxesLabels();
+            return minX + (maxX - minX) * ((float)x / pixelWidth);
+        }
+        private float VirtualiseY(int y)
+        {
+            return minY + (maxY - minY) * (1 - ((float)y / pixelHeight));
         }
 
-        private void DrawGrid(float xStep, float yStep, ref Color colour, int thickness)
+        private int RealiseX(float x)
+        {
+            return (int)((x - minX) / (maxX - minX) * pixelWidth);
+        }
+        private int RealiseY(float y)
+        {
+            return (int)((1 - (y - minY) / (maxY - minY)) * pixelHeight);
+        }
+
+        private void StartBSP(object sender, DoWorkEventArgs e)
+        {
+            calculationStopwatch.Start();
+            e.Result = BSP();
+            calculationStopwatch.Stop();
+        }
+
+        private void EndBSP(object sender, RunWorkerCompletedEventArgs e)
+        {
+            bspRoot = (BSPNode)(e.Result);
+            if (!graphRenderWorker.IsBusy)
+            {
+                graphRenderWorker.RunWorkerAsync(bspRoot);
+            }
+
+            if (App.MainApp.viewGraphBSP)
+            {
+                if (!BSPRenderWorker.IsBusy)
+                {
+                    BSPRenderWorker.RunWorkerAsync(bspRoot);
+                }
+            }
+        }
+
+        private BSPNode BSP()
+        {
+            BSPNode root = new BSPNode() { xMin = minX, xMax = maxX, yMin = minY, yMax = maxY, containsGraph = false };
+            if (calculator.InsideBounds((root.xMin, root.xMax), (root.yMin, root.yMax)))
+            {
+                root.containsGraph = true;
+                if (maxDepth != 0)
+                {
+                    BSPDescend(root, 1);
+                }
+            }
+            return root;
+        }
+
+        private void BSPDescend(BSPNode root, int depth)
+        {
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            foreach (BSPNode child in root.children)
+            {
+                if (calculator.InsideBounds((child.xMin, child.xMax), (child.yMin, child.yMax)))
+                {
+                    child.containsGraph = true;
+                }
+            }
+            foreach (BSPNode child in root.children)
+            {
+                if (child.containsGraph)
+                {
+                    if (depth < maxDepth && depth < absoluteMaxDepth)
+                    {
+                        BSPDescend(child, depth + 1);
+                    }
+                }
+            }
+        }
+
+        private void DrawAxes(object sender, DoWorkEventArgs e)
+        {
+            renderingStopwatch.Start();
+            axesStopwatch.Start();
+            BitmapRenderer axesRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
+            axesRenderer.Fill(App.MainApp.graphingColours.background);
+
+            AxesRenderer axes = new AxesRenderer(ref axesRenderer);
+
+            axes.minX = minX;
+            axes.minY = minY;
+            axes.maxX = maxX;
+            axes.maxY = maxY;
+            axes.pixelWidth = pixelWidth;
+            axes.pixelHeight = pixelHeight;
+            axes.minorGridXStep = minorGridXStep;
+            axes.majorGridXStep = majorGridXStep;
+            axes.minorGridYStep = minorGridYStep;
+            axes.majorGridYStep = majorGridYStep;
+            axes.majorGridCoefficient = majorGridCoefficient;
+            axes.majorGridXPowerOfTen = majorGridXPowerOfTen;
+            axes.majorGridYPowerOfTen = majorGridYPowerOfTen;
+
+            axes.DrawGrid(minorGridXStep, minorGridYStep, ref App.MainApp.graphingColours.minorGridColour, 1);
+            axes.DrawGrid(majorGridXStep, majorGridYStep, ref App.MainApp.graphingColours.majorGridColour, 1);
+
+            axes.DrawVerticalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
+            axes.DrawHorizontalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
+
+            axes.DrawAxesLabels();
+            e.Result = axesRenderer;
+            axesStopwatch.Stop();
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawAxesCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            if (e.Cancelled == false)
+            {
+                axesRendererOutput = (BitmapRenderer)(e.Result);
+                CompositeImage();
+            }
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawGraph(object sender, DoWorkEventArgs e)
+        {
+            renderingStopwatch.Start();
+            curveStopwatch.Start();
+            BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
+            BSPNode root = e.Argument as BSPNode;
+
+            GraphRenderer graph = new GraphRenderer(ref bitmapRenderer);
+            graph.minX = minX;
+            graph.maxX = maxX;
+            graph.minY = minY;
+            graph.maxY = maxY;
+            graph.pixelWidth = pixelWidth;
+            graph.pixelHeight = pixelHeight;
+            graph.DrawGraph(root);
+
+            e.Result = bitmapRenderer;
+            curveStopwatch.Stop();
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawGraphCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            if (e.Cancelled == false)
+            {
+                graphRendererOutput = (BitmapRenderer)(e.Result);
+                CompositeImage();
+            }
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawBSP(object sender, DoWorkEventArgs e)
+        {
+            renderingStopwatch.Start();
+            BSPLineStopwatch.Start();
+            BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
+            BSPNode root = e.Argument as BSPNode;
+
+            BSPRenderer bsp = new BSPRenderer(ref bitmapRenderer);
+            bsp.minX = minX;
+            bsp.maxX = maxX;
+            bsp.minY = minY;
+            bsp.maxY = maxY;
+            bsp.pixelWidth = pixelWidth;
+            bsp.pixelHeight = pixelHeight;
+            bsp.DrawBSP(root);
+
+            e.Result = bitmapRenderer;
+            BSPLineStopwatch.Stop();
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawBSPCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            if (e.Cancelled == false)
+            {
+                BSPRendererOutput = (BitmapRenderer)(e.Result);
+                CompositeImage();
+            }
+            renderingStopwatch.Stop();
+        }
+
+        private void DrawPerformanceStats()
+        {
+            renderer.DrawText(5, 5, "Calculation: " + calculationStopwatch.ElapsedMilliseconds.ToString() + "ms (" + Math.Round(((double)calculationStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "Rendering: " + renderingStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)renderingStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "    Axes: " + axesStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)axesStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "    Curve: " + curveStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)curveStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "    BSP Lines: " + BSPLineStopwatch.ElapsedMilliseconds.ToString() + "ms ( " + Math.Round(((double)BSPLineStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "    Compositing: " + compositingStopwatch.ElapsedMilliseconds.ToString() + "ms (" + Math.Round(((double)compositingStopwatch.ElapsedMilliseconds / totalStopwatch.ElapsedMilliseconds) * 100, 1).ToString() + "%)\n"
+                + "Total: " + totalStopwatch.ElapsedMilliseconds.ToString() + "ms",
+                ref App.MainApp.graphingColours.performanceStats);
+        }
+    }
+
+    internal class Renderer
+    {
+        public float minX;
+        public float maxX;
+        public float minY;
+        public float maxY;
+        public int pixelWidth;
+        public int pixelHeight;
+        public BitmapRenderer renderer;
+
+        protected float VirtualiseX(int x)
+        {
+            return minX + (maxX - minX) * ((float)x / pixelWidth);
+        }
+        protected float VirtualiseY(int y)
+        {
+            return minY + (maxY - minY) * (1 - ((float)y / pixelHeight));
+        }
+
+        protected int RealiseX(float x)
+        {
+            return (int)((x - minX) / (maxX - minX) * pixelWidth);
+        }
+        protected int RealiseY(float y)
+        {
+            return (int)((1 - (y - minY) / (maxY - minY)) * pixelHeight);
+        }
+    }
+    
+    internal class AxesRenderer : Renderer
+    {
+        public float majorGridXStep = 5;
+        public float majorGridYStep = 5;
+        public float minorGridXStep = 1;
+        public float minorGridYStep = 1;
+        public int majorGridCoefficient = 5;
+        public int majorGridXPowerOfTen = 0;
+        public int majorGridYPowerOfTen = 0;
+
+        public AxesRenderer(ref BitmapRenderer newRenderer)
+        {
+            renderer = newRenderer;
+        }
+
+        public void DrawGrid(float xStep, float yStep, ref Color colour, int thickness)
         {
             float x = xStep * (float)Math.Floor(minX / xStep);
             while (x < maxX)
@@ -295,7 +605,7 @@ namespace calculator_gui
             }
         }
 
-        private void DrawVerticalVirtualLine(float x, ref Color colour, int thickness)
+        public void DrawVerticalVirtualLine(float x, ref Color colour, int thickness)
         {
             if (minX > x || maxX < x)
             {
@@ -304,7 +614,7 @@ namespace calculator_gui
             renderer.DrawVerticalLine(RealiseX(x), ref colour, thickness);
         }
 
-        private void DrawHorizontalVirtualLine(float y, ref Color colour, int thickness)
+        public void DrawHorizontalVirtualLine(float y, ref Color colour, int thickness)
         {
             if (minY > y || maxY < y)
             {
@@ -318,7 +628,7 @@ namespace calculator_gui
             renderer.DrawCenteredText(RealiseX(x) + realOffsetX, RealiseY(y) - realOffsetY, text, ref colour);
         }
 
-        private void DrawAxesLabels()
+        public void DrawAxesLabels()
         {
             int realOriginX = RealiseX(0);
             int realOriginY = RealiseY(0);
@@ -416,93 +726,16 @@ namespace calculator_gui
                 y += majorGridYStep;
             }
         }
+    }
 
-        private float VirtualiseX(int x)
+    internal class GraphRenderer : Renderer
+    {
+        public GraphRenderer(ref BitmapRenderer newRenderer)
         {
-            return minX + (maxX - minX) * ((float)x / pixelWidth);
-        }
-        private float VirtualiseY(int y)
-        {
-            return minY + (maxY - minY) * (1 - ((float)y / pixelHeight));
-        }
-
-        private int RealiseX(float x)
-        {
-            return (int)((x - minX) / (maxX - minX) * pixelWidth);
-        }
-        private int RealiseY(float y)
-        {
-            return (int)((1 - (y - minY) / (maxY - minY)) * pixelHeight);
+            renderer = newRenderer;
         }
 
-        private BSPNode BSP()
-        {
-            BSPNode root = new BSPNode() { xMin = minX, xMax = maxX, yMin = minY, yMax = maxY, containsGraph = false };
-            if (calculator.InsideBounds((root.xMin, root.xMax), (root.yMin, root.yMax)))
-            {
-                root.containsGraph = true;
-                if (maxDepth != 0)
-                {
-                    BSPDescend(root, 1);
-                }
-            }
-            return root;
-        }
-
-        private void BSPDescend(BSPNode root, int depth)
-        {
-            root.children.Add(new BSPNode()
-            {
-                xMin = root.xMin,
-                xMax = (root.xMax + root.xMin) / 2,
-                yMin = root.yMin,
-                yMax = (root.yMax + root.yMin) / 2,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = (root.xMax + root.xMin) / 2,
-                xMax = root.xMax,
-                yMin = root.yMin,
-                yMax = (root.yMax + root.yMin) / 2,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = root.xMin,
-                xMax = (root.xMax + root.xMin) / 2,
-                yMin = (root.yMax + root.yMin) / 2,
-                yMax = root.yMax,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = (root.xMax + root.xMin) / 2,
-                xMax = root.xMax,
-                yMin = (root.yMax + root.yMin) / 2,
-                yMax = root.yMax,
-                containsGraph = false
-            });
-            foreach (BSPNode child in root.children)
-            {
-                if (calculator.InsideBounds((child.xMin, child.xMax), (child.yMin, child.yMax)))
-                {
-                    child.containsGraph = true;
-                }
-            }
-            foreach (BSPNode child in root.children)
-            {
-                if (child.containsGraph)
-                {
-                    if (depth < maxDepth && depth < absoluteMaxDepth)
-                    {
-                        BSPDescend(child, depth + 1);
-                    }
-                }
-            }
-        }
-
-        private void DrawGraph(BSPNode root)
+        public void DrawGraph(BSPNode root)
         {
             DrawCell(ref root);
             for (int index = 0; index < root.children.Count; index++)
@@ -511,7 +744,7 @@ namespace calculator_gui
             }
         }
 
-        private void DrawCell(ref BSPNode node)
+        public void DrawCell(ref BSPNode node)
         {
             int realXMin = RealiseX(node.xMin);
             int realXMax = RealiseX(node.xMax);
@@ -522,8 +755,16 @@ namespace calculator_gui
                 renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref App.MainApp.graphingColours.axesColour);
             }
         }
+    }
 
-        private void DrawBSP(BSPNode root)
+    internal class BSPRenderer : Renderer
+    {
+        public BSPRenderer(ref BitmapRenderer newRenderer)
+        {
+            renderer = newRenderer;
+        }
+
+        public void DrawBSP(BSPNode root)
         {
             if (root.children.Count == 0)
             {
@@ -535,7 +776,7 @@ namespace calculator_gui
             }
         }
 
-        private void DrawBSPNode(ref BSPNode node)
+        public void DrawBSPNode(ref BSPNode node)
         {
             int realXMin = RealiseX(node.xMin);
             int realXMax = RealiseX(node.xMax);

@@ -166,5 +166,23 @@ namespace calculator_gui
             bitmap.AddDirtyRect(new System.Windows.Int32Rect(x, y, width, height));
             bitmap.Unlock();
         }
+
+        public void OverlayBitmapRenderer(ref BitmapRenderer bitmapRenderer)
+        {
+            int smallerWidth = width;
+            if (width > bitmapRenderer.width)
+            {
+                smallerWidth = bitmapRenderer.width;
+            }
+            int smallerHeight = height;
+            if (height > bitmapRenderer.height)
+            {
+                smallerHeight = bitmapRenderer.height;
+            }
+            bitmap.Lock();
+            graphics.DrawImage(bitmapRenderer.backingBitmap, new Rectangle(0, 0, bitmapRenderer.width, bitmapRenderer.height));
+            bitmap.AddDirtyRect(new System.Windows.Int32Rect(0, 0, smallerWidth, smallerHeight));
+            bitmap.Unlock();
+        }
     }
 }
