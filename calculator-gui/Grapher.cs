@@ -47,11 +47,15 @@ namespace calculator_gui
 
         private BackgroundWorker graphRenderWorker;
         private BitmapRenderer graphRendererOutput;
+        private readonly object _queuedGraphUpdateLock = new object();
+        private bool queuedGraphUpdate;
 
         private BackgroundWorker BSPRenderWorker;
         private BitmapRenderer BSPRendererOutput;
 
         private BackgroundWorker calculationWorker;
+        private readonly object _queuedCalculationLock = new object();
+        private bool queuedCalculation;
 
         public Grapher(ref System.Windows.Controls.Image newImage)
         {
@@ -96,9 +100,6 @@ namespace calculator_gui
 
         public void SizeChanged(int newWidth, int newHeight)
         {
-            renderer = new BitmapRenderer(newWidth, newHeight);
-            renderer.Fill(App.MainApp.graphingColours.background);
-            image.Source = renderer.bitmap;
             if (pixelWidth != 0 && pixelHeight != 0)
             {
                 float middleX = (minX + maxX) / 2;
@@ -135,6 +136,9 @@ namespace calculator_gui
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
                     Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
+            renderer = new BitmapRenderer(newWidth, newHeight);
+            renderer.Fill(App.MainApp.graphingColours.background);
+            image.Source = renderer.bitmap;
             UpdateFrame();
         }
 
@@ -268,12 +272,34 @@ namespace calculator_gui
             {
                 if (!calculationWorker.IsBusy)
                 {
+                    lock (_queuedCalculationLock)
+                    {
+                        queuedCalculation = false;
+                    }
                     calculationWorker.RunWorkerAsync();
+                }
+                else
+                {
+                    lock (_queuedCalculationLock)
+                    {
+                        queuedCalculation = true;
+                    }
                 }
 
                 if (!graphRenderWorker.IsBusy)
                 {
+                    lock (_queuedGraphUpdateLock)
+                    {
+                        queuedGraphUpdate = false;
+                    }
                     graphRenderWorker.RunWorkerAsync(bspRoot);
+                }
+                else
+                {
+                    lock (_queuedGraphUpdateLock)
+                    {
+                        queuedGraphUpdate = true;
+                    }
                 }
 
                 if (App.MainApp.viewGraphBSP)
@@ -334,7 +360,15 @@ namespace calculator_gui
         private void StartBSP(object sender, DoWorkEventArgs e)
         {
             calculationStopwatch.Start();
-            e.Result = BSP();
+            do
+            {
+                lock (_queuedCalculationLock)
+                {
+                    queuedCalculation = false;
+                }
+                e.Result = BSP();
+            }
+            while (queuedCalculation);
             calculationStopwatch.Stop();
         }
 
@@ -343,7 +377,18 @@ namespace calculator_gui
             bspRoot = (BSPNode)(e.Result);
             if (!graphRenderWorker.IsBusy)
             {
+                lock (_queuedGraphUpdateLock)
+                {
+                    queuedGraphUpdate = false;
+                }
                 graphRenderWorker.RunWorkerAsync(bspRoot);
+            }
+            else
+            {
+                lock (_queuedGraphUpdateLock)
+                {
+                    queuedGraphUpdate = true;
+                }
             }
 
             if (App.MainApp.viewGraphBSP)
@@ -424,6 +469,11 @@ namespace calculator_gui
 
         private void DrawAxes(object sender, DoWorkEventArgs e)
         {
+            e.Result = DrawAxes();
+        }
+
+        private BitmapRenderer DrawAxes()
+        {
             renderingStopwatch.Start();
             axesStopwatch.Start();
             BitmapRenderer axesRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
@@ -452,9 +502,9 @@ namespace calculator_gui
             axes.DrawHorizontalVirtualLine(0, ref App.MainApp.graphingColours.axesColour, 2);
 
             axes.DrawAxesLabels();
-            e.Result = axesRenderer;
             axesStopwatch.Stop();
             renderingStopwatch.Stop();
+            return axesRenderer;
         }
 
         private void DrawAxesCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -470,10 +520,23 @@ namespace calculator_gui
 
         private void DrawGraph(object sender, DoWorkEventArgs e)
         {
+            do
+            {
+                lock (_queuedGraphUpdateLock)
+                {
+                    queuedGraphUpdate = false;
+                }
+                BSPNode root = (BSPNode)e.Argument;
+                e.Result = DrawGraph(root);
+            }
+            while (queuedGraphUpdate);
+        }
+
+        private BitmapRenderer DrawGraph(BSPNode root)
+        {
             renderingStopwatch.Start();
             curveStopwatch.Start();
             BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
-            BSPNode root = e.Argument as BSPNode;
 
             GraphRenderer graph = new GraphRenderer(ref bitmapRenderer);
             graph.minX = minX;
@@ -484,9 +547,9 @@ namespace calculator_gui
             graph.pixelHeight = pixelHeight;
             graph.DrawGraph(root);
 
-            e.Result = bitmapRenderer;
             curveStopwatch.Stop();
             renderingStopwatch.Stop();
+            return bitmapRenderer;
         }
 
         private void DrawGraphCompleted(object sender, RunWorkerCompletedEventArgs e)
