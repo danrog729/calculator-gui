@@ -37,68 +37,79 @@
         </Grid>
 
         <Border Grid.Row="1" Margin="10,0,10,10" Style="{DynamicResource Border}">
-            <StackPanel >
+            <ScrollViewer Style="{DynamicResource ScrollViewer}">
+                <StackPanel>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Theme</TextBlock>
-                    <ComboBox Name="ThemeSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeTheme" Style="{DynamicResource SettingsComboBox}"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Theme</TextBlock>
+                        <ComboBox Name="ThemeSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeTheme" Style="{DynamicResource SettingsComboBox}"/>
+                    </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Angle</TextBlock>
-                    <ComboBox Name="AngleSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeAngleType" Style="{DynamicResource SettingsComboBox}">
-                        <ComboBoxItem IsSelected="True" Content="Degrees"/>
-                        <ComboBoxItem Content="Radians"/>
-                    </ComboBox>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Angle</TextBlock>
+                        <ComboBox Name="AngleSelector" Grid.Column="1" Margin="10" SelectionChanged="ChangeAngleType" Style="{DynamicResource SettingsComboBox}">
+                            <ComboBoxItem IsSelected="True" Content="Degrees"/>
+                            <ComboBoxItem Content="Radians"/>
+                        </ComboBox>
+                    </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="140"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">View Graph BSP Lines</TextBlock>
-                    <CheckBox Name="ViewGraphBSP" Grid.Column="1" Margin="10" Checked="GraphBSPChanged" Unchecked="GraphBSPChanged"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">View Graph BSP Lines</TextBlock>
+                        <CheckBox Name="ViewGraphBSP" Grid.Column="1" Margin="10" Checked="GraphBSPChanged" Unchecked="GraphBSPChanged"/>
+                    </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="140"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Auto BSP Depth</TextBlock>
-                    <CheckBox Name="AutoBSPDepth" Grid.Column="1" Margin="10" Checked="AutoBSPChanged" Unchecked="AutoBSPChanged" IsChecked="True"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Auto BSP Depth</TextBlock>
+                        <CheckBox Name="AutoBSPDepth" Grid.Column="1" Margin="10" Checked="AutoBSPChanged" Unchecked="AutoBSPChanged" IsChecked="True"/>
+                    </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="140"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">BSP Max Depth</TextBlock>
-                    <Border Grid.Column="1" Margin="10" Style="{DynamicResource Border}">
-                        <TextBox Name="BSPMaxDepth" Style="{DynamicResource TextBox}" TextChanged="MaxBSPDepthChanged" IsEnabled="False">5</TextBox>
-                    </Border>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">BSP Max Depth</TextBlock>
+                        <Border Grid.Column="1" Margin="10" Style="{DynamicResource Border}">
+                            <TextBox Name="BSPMaxDepth" Style="{DynamicResource TextBox}" TextChanged="MaxBSPDepthChanged" IsEnabled="False">5</TextBox>
+                        </Border>
+                    </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="140"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Performance Stats</TextBlock>
-                    <CheckBox Name="PerformanceStats" Grid.Column="1" Margin="10" Checked="PerformanceStatsChanged" Unchecked="PerformanceStatsChanged"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Performance Stats</TextBlock>
+                        <CheckBox Name="PerformanceStats" Grid.Column="1" Margin="10" Checked="PerformanceStatsChanged" Unchecked="PerformanceStatsChanged"/>
+                    </Grid>
 
-            </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="10" Style="{DynamicResource StandardTextBlock}">Sounds</TextBlock>
+                        <CheckBox Name="SoundsToggle" Grid.Column="1" Margin="10" Checked="SoundsChanged" Unchecked="SoundsChanged"/>
+                    </Grid>
+
+                </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </Window>

@@ -28,6 +28,7 @@ namespace calculator_gui
 
         public void Load_SimpleCalculator(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             Frame_Calculator.Source = new Uri("SimpleCalculator.xaml", UriKind.Relative);
             SimpleButton.IsEnabled = false;
             ScientificButton.IsEnabled = true;
@@ -36,6 +37,7 @@ namespace calculator_gui
 
         public void Load_ScientificCalculator(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             Frame_Calculator.Source = new Uri("ScientificCalculator.xaml", UriKind.Relative);
             SimpleButton.IsEnabled = true;
             ScientificButton.IsEnabled = false;
@@ -44,6 +46,7 @@ namespace calculator_gui
 
         public void Load_ProgrammerCalculator(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             Frame_Calculator.Source = new Uri("ProgrammerCalculator.xaml", UriKind.Relative);
             SimpleButton.IsEnabled = true;
             ScientificButton.IsEnabled = true;
@@ -52,6 +55,7 @@ namespace calculator_gui
 
         public void Load_Settings(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             //if (settings == null)
             //{
             //    settings = new Settings();
@@ -62,11 +66,13 @@ namespace calculator_gui
 
         public void CloseApplication(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.Shutdown();
         }
 
         public void MaximiseApplication(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (WindowState == WindowState.Maximized)
             {
                 SystemCommands.RestoreWindow(this);
@@ -79,6 +85,7 @@ namespace calculator_gui
 
         public void MinimiseApplication(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             SystemCommands.MinimizeWindow(this);
         }
 

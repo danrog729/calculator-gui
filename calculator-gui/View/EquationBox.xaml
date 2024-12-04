@@ -9,8 +9,8 @@
     
     <Border Style="{DynamicResource Border}">
         <StackPanel Orientation="Horizontal">
-            <Button Style="{DynamicResource InvisibleButton}" Width="20">👁</Button>
-            <Button Style="{DynamicResource InvisibleButton}" Width="20">
+            <Button Name="VisibilityButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="VisibilityClicked">👁</Button>
+            <Button Name="ColourButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="ColourButtonClicked">
                 <Ellipse Width="16" Height="16" Stroke="{DynamicResource BorderColour}" StrokeThickness="1" Margin="2" Fill="Black"/>
             </Button>
             <Rectangle Width="1" Fill="{DynamicResource BorderColour}"/>

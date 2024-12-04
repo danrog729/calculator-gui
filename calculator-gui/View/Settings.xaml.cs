@@ -33,21 +33,25 @@ namespace calculator_gui
 
         public void ChangeTheme(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.CurrentTheme = App.MainApp.themes[ThemeSelector.SelectedIndex];
         }
 
         public void ChangeAngleType(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.angleType = AngleSelector.SelectedIndex;
         }
 
         public void GraphBSPChanged(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.viewGraphBSP = !App.MainApp.viewGraphBSP;
         }
 
         public void AutoBSPChanged(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.useAutoBSPDepth = !App.MainApp.useAutoBSPDepth;
             if (BSPMaxDepth != null)
             {
@@ -68,7 +72,14 @@ namespace calculator_gui
 
         public void PerformanceStatsChanged(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             App.MainApp.performanceStatsEnabled = !App.MainApp.performanceStatsEnabled;
+        }
+
+        public void SoundsChanged(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.soundsOn = !App.MainApp.soundsOn;
+            App.MainApp.clickSound.Play();
         }
 
         public void TitleBar_Dragged(object sender, MouseButtonEventArgs e)

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Media;
+using System.Media;
 
 namespace calculator_gui
 {
@@ -47,6 +48,7 @@ namespace calculator_gui
         public bool useAutoBSPDepth = false;
         public int maxBSPDepth;
         public bool performanceStatsEnabled;
+        public bool soundsOn = false;
 
         public App()
         {
@@ -84,11 +86,11 @@ namespace calculator_gui
             {
                 _path = value;
                 Uri uri = new Uri(_path, UriKind.Relative);
-                player = new MediaPlayer();
-                player.Open(uri);
+                Stream resourceStream = Application.GetResourceStream(uri).Stream;
+                player = new SoundPlayer(resourceStream);
             }
         }
-        private MediaPlayer player;
+        private SoundPlayer player;
 
         public Sound(string newPath)
         {
@@ -97,17 +99,15 @@ namespace calculator_gui
 
         public void Play()
         {
-            player.Play();
+            if (App.MainApp.soundsOn)
+            {
+                player.Play();
+            }
         }
 
         public void Stop()
         {
             player.Stop();
-        }
-
-        public void Pause()
-        {
-            player.Pause();
         }
     }
 }

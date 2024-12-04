@@ -21,7 +21,9 @@ namespace calculator_gui
     public partial class EquationBox : UserControl
     {
         public event EventHandler TextChanged;
+        public event EventHandler VisiblilityChanged;
         public string Text;
+        public bool GraphHidden;
 
         public EquationBox()
         {
@@ -35,6 +37,27 @@ namespace calculator_gui
             {
                 TextChanged(this, e);
             }
+        }
+        private void VisibilityClicked(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.clickSound.Play();
+            GraphHidden = !GraphHidden;
+            if (VisiblilityChanged != null)
+            {
+                VisiblilityChanged(this, e);
+            }
+            if (GraphHidden)
+            {
+                VisibilityButton.Content = "○";
+            }
+            else
+            {
+                VisibilityButton.Content = "👁";
+            }
+        }
+        private void ColourButtonClicked(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.clickSound.Play();
         }
     }
 }

@@ -127,6 +127,7 @@ namespace calculator_gui
 
         public void BitButtonPressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             double output = 0;
             if ((string)((Button)sender).Content == "0")
             {
@@ -216,6 +217,7 @@ namespace calculator_gui
 
         public void AppendDigit(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (newExpression)
             {
                 calculator.Input = (string)((Button)sender).Tag;
@@ -240,6 +242,7 @@ namespace calculator_gui
 
         public void AppendOperator(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             calculator.Input += ((Button)sender).Tag;
             OutputTextBlock.Text = calculator.ToString();
             newExpression = false;
@@ -249,6 +252,7 @@ namespace calculator_gui
 
         public void AppendDecimal(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             calculator.Input = calculator.ToString();
             calculator.Input += ".";
             OutputTextBlock.Text = calculator.Input;
@@ -259,6 +263,7 @@ namespace calculator_gui
 
         public void ButtonPi_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (newExpression)
             {
                 calculator.Input = "π";
@@ -275,6 +280,7 @@ namespace calculator_gui
 
         public void ButtonE_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (newExpression)
             {
                 calculator.Input = "e";
@@ -291,6 +297,7 @@ namespace calculator_gui
 
         public void ButtonNegate_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (calculator.TokenList.Count > 0)
             {
                 if (negated)
@@ -310,6 +317,7 @@ namespace calculator_gui
 
         public void ButtonDEL_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (calculator.TokenList.Count > 0)
             {
                 if (calculator.TokenList[calculator.TokenList.Count - 1] is OperatorToken)
@@ -329,6 +337,7 @@ namespace calculator_gui
 
         public void ButtonAC_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             calculator.Input = "";
             OutputTextBlock.Text = calculator.ToString();
             newExpression = true;
@@ -338,6 +347,7 @@ namespace calculator_gui
 
         public void ButtonEquals_Pressed(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (calculator.Input.Length > 0)
             {
                 string oldExpression = calculator.ToString();
@@ -367,6 +377,7 @@ namespace calculator_gui
 
         public void BaseChanged(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (BaseSelector.SelectedIndex == 0)
             {
                 // bin
@@ -391,6 +402,7 @@ namespace calculator_gui
 
         public void WordSizeChanged(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             if (WordSize.SelectedIndex == 0)
             {
                 // 8-bit
@@ -414,6 +426,7 @@ namespace calculator_gui
 
         public void ClearHistory(object sender, RoutedEventArgs e)
         {
+            App.MainApp.clickSound.Play();
             History.Children.Clear();
         }
 

@@ -44,6 +44,8 @@ namespace calculator_gui
 
         private BackgroundWorker axesWorker;
         private BitmapRenderer axesRendererOutput;
+        private readonly object _queuedAxesUpdateLock = new object();
+        private bool queuedAxesUpdate;
 
         private BackgroundWorker graphRenderWorker;
         private BitmapRenderer graphRendererOutput;
@@ -52,6 +54,8 @@ namespace calculator_gui
 
         private BackgroundWorker BSPRenderWorker;
         private BitmapRenderer BSPRendererOutput;
+        private readonly object _queuedBSPRenderLock = new object();
+        private bool queuedBSPRender;
 
         private BackgroundWorker calculationWorker;
         private readonly object _queuedCalculationLock = new object();
@@ -84,14 +88,20 @@ namespace calculator_gui
             axesWorker = new BackgroundWorker();
             axesWorker.DoWork += DrawAxes;
             axesWorker.RunWorkerCompleted += DrawAxesCompleted;
+            axesWorker.WorkerReportsProgress = true;
+            axesWorker.ProgressChanged += ReportAxesProgress;
 
             graphRenderWorker = new BackgroundWorker();
             graphRenderWorker.DoWork += DrawGraph;
             graphRenderWorker.RunWorkerCompleted += DrawGraphCompleted;
+            graphRenderWorker.WorkerReportsProgress = true;
+            graphRenderWorker.ProgressChanged += ReportGraphProgress;
 
             BSPRenderWorker = new BackgroundWorker();
             BSPRenderWorker.DoWork += DrawBSP;
             BSPRenderWorker.RunWorkerCompleted += DrawBSPCompleted;
+            BSPRenderWorker.WorkerReportsProgress = true;
+            BSPRenderWorker.ProgressChanged += ReportBSPProgress;
 
             calculationWorker = new BackgroundWorker();
             calculationWorker.DoWork += StartBSP;
@@ -265,7 +275,18 @@ namespace calculator_gui
 
             if (!axesWorker.IsBusy)
             {
+                lock (_queuedAxesUpdateLock)
+                {
+                    queuedAxesUpdate = false;
+                }
                 axesWorker.RunWorkerAsync();
+            }
+            else
+            {
+                lock (_queuedAxesUpdateLock)
+                {
+                    queuedAxesUpdate = true;
+                }
             }
 
             if (calculator.isValidExpression)
@@ -306,7 +327,18 @@ namespace calculator_gui
                 {
                     if (!BSPRenderWorker.IsBusy)
                     {
+                        lock (_queuedBSPRenderLock)
+                        {
+                            queuedBSPRender = false;
+                        }
                         BSPRenderWorker.RunWorkerAsync(bspRoot);
+                    }
+                    else
+                    {
+                        lock (_queuedBSPRenderLock)
+                        {
+                            queuedBSPRender = true;
+                        }
                     }
                 }
             }
@@ -469,7 +501,16 @@ namespace calculator_gui
 
         private void DrawAxes(object sender, DoWorkEventArgs e)
         {
-            e.Result = DrawAxes();
+            do
+            {
+                lock (_queuedAxesUpdateLock)
+                {
+                    queuedAxesUpdate = false;
+                }
+                e.Result = DrawAxes();
+                axesWorker.ReportProgress(50, e.Result);
+            }
+            while (queuedAxesUpdate);
         }
 
         private BitmapRenderer DrawAxes()
@@ -507,6 +548,14 @@ namespace calculator_gui
             return axesRenderer;
         }
 
+        private void ReportAxesProgress(object sender, ProgressChangedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            axesRendererOutput = e.UserState as BitmapRenderer;
+            CompositeImage();
+            renderingStopwatch.Stop();
+        }
+
         private void DrawAxesCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             renderingStopwatch.Start();
@@ -528,6 +577,7 @@ namespace calculator_gui
                 }
                 BSPNode root = (BSPNode)e.Argument;
                 e.Result = DrawGraph(root);
+                graphRenderWorker.ReportProgress(50, e.Result);
             }
             while (queuedGraphUpdate);
         }
@@ -552,6 +602,14 @@ namespace calculator_gui
             return bitmapRenderer;
         }
 
+        private void ReportGraphProgress(object sender, ProgressChangedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            graphRendererOutput = e.UserState as BitmapRenderer;
+            CompositeImage();
+            renderingStopwatch.Stop();
+        }
+
         private void DrawGraphCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             renderingStopwatch.Start();
@@ -567,20 +625,37 @@ namespace calculator_gui
         {
             renderingStopwatch.Start();
             BSPLineStopwatch.Start();
-            BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
-            BSPNode root = e.Argument as BSPNode;
+            do
+            {
+                lock (_queuedBSPRenderLock)
+                {
+                    queuedBSPRender = false;
+                }
+                BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
+                BSPNode root = e.Argument as BSPNode;
 
-            BSPRenderer bsp = new BSPRenderer(ref bitmapRenderer);
-            bsp.minX = minX;
-            bsp.maxX = maxX;
-            bsp.minY = minY;
-            bsp.maxY = maxY;
-            bsp.pixelWidth = pixelWidth;
-            bsp.pixelHeight = pixelHeight;
-            bsp.DrawBSP(root);
+                BSPRenderer bsp = new BSPRenderer(ref bitmapRenderer);
+                bsp.minX = minX;
+                bsp.maxX = maxX;
+                bsp.minY = minY;
+                bsp.maxY = maxY;
+                bsp.pixelWidth = pixelWidth;
+                bsp.pixelHeight = pixelHeight;
+                bsp.DrawBSP(root);
 
-            e.Result = bitmapRenderer;
+                e.Result = bitmapRenderer;
+                BSPRenderWorker.ReportProgress(50, e.Result);
+            }
+            while (queuedBSPRender);
             BSPLineStopwatch.Stop();
+            renderingStopwatch.Stop();
+        }
+
+        private void ReportBSPProgress(object sender, ProgressChangedEventArgs e)
+        {
+            renderingStopwatch.Start();
+            BSPRendererOutput = e.UserState as BitmapRenderer;
+            CompositeImage();
             renderingStopwatch.Stop();
         }
 
