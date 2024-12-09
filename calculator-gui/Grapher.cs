@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.ComponentModel;
+using System.Linq.Expressions;
+using System.Xml.Schema;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace calculator_gui
 {
@@ -28,7 +32,6 @@ namespace calculator_gui
 
         private System.Windows.Controls.Image image;
         private BitmapRenderer renderer;
-        private FreeformCalculator calculator;
 
         private Stopwatch calculationStopwatch;
         private Stopwatch renderingStopwatch;
@@ -38,7 +41,7 @@ namespace calculator_gui
         private Stopwatch compositingStopwatch;
         private Stopwatch totalStopwatch;
 
-        private BSPNode bspRoot;
+        private List<Equation> equations;
         private int absoluteMaxDepth = 0;
         private int maxDepth = 5;
 
@@ -75,15 +78,12 @@ namespace calculator_gui
             minY = -10;
             maxY = 10;
 
-            calculator = new FreeformCalculator();
-            calculator.Input = "";
-
             absoluteMaxDepth =
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
                     Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
 
-            bspRoot = new BSPNode();
+            equations = new List<Equation>();
 
             axesWorker = new BackgroundWorker();
             axesWorker.DoWork += DrawAxes;
@@ -146,6 +146,11 @@ namespace calculator_gui
                 (int)Math.Max(
                     Math.Ceiling(Math.Log(pixelWidth, 2)),
                     Math.Ceiling(Math.Log(pixelHeight, 2))) - 1;
+            foreach (Equation equation in equations)
+            {
+                equation.absoluteMaxDepth = absoluteMaxDepth;
+                equation.NewBounds(minX, maxX, minY, maxY);
+            }
             renderer = new BitmapRenderer(newWidth, newHeight);
             renderer.Fill(App.MainApp.graphingColours.background);
             image.Source = renderer.bitmap;
@@ -170,6 +175,10 @@ namespace calculator_gui
             maxX = virtualX + factor * (maxX - virtualX);
             minY = virtualY - factor * (virtualY - minY);
             maxY = virtualY + factor * (maxY - virtualY);
+            foreach (Equation equation in equations)
+            {
+                equation.NewBounds(minX, maxX, minY, maxY);
+            }
 
             // update the grid steps
             if (majorGridXStep * (pixelWidth / (maxX - minX)) < 75 && majorGridYStep * (pixelHeight / (maxY - minY)) < 75)
@@ -244,12 +253,67 @@ namespace calculator_gui
             maxX += deltaX;
             minY += deltaY;
             maxY += deltaY;
+            foreach (Equation equation in equations)
+            {
+                equation.NewBounds(minX, maxX, minY, maxY);
+            }
             UpdateFrame();
         }
 
-        public void NewEquation(string equation)
+        public void NewEquation(string newEquation, System.Windows.Media.Color colour)
         {
-            calculator.Input = equation;
+            Equation equation = new Equation(Color.FromArgb(colour.A, colour.R, colour.G, colour.B), maxDepth, absoluteMaxDepth);
+            equation.NewEquation(newEquation);
+            equations.Add(equation);
+            UpdateFrame();
+        }
+
+        public void UpdateEquation(int index, string newEquation)
+        {
+            if (index < equations.Count)
+            {
+                equations[index].NewEquation(newEquation);
+                UpdateFrame();
+            }
+        }
+
+        public void UpdateColour(int index, System.Windows.Media.Color colour)
+        {
+            equations[index].colour = Color.FromArgb(colour.A, colour.R, colour.G, colour.B);
+            if (!graphRenderWorker.IsBusy)
+            {
+                lock (_queuedGraphUpdateLock)
+                {
+                    queuedGraphUpdate = false;
+                }
+                graphRenderWorker.RunWorkerAsync();
+            }
+            else
+            {
+                lock (_queuedGraphUpdateLock)
+                {
+                    queuedGraphUpdate = true;
+                }
+            }
+
+            if (App.MainApp.viewGraphBSP)
+            {
+                if (!BSPRenderWorker.IsBusy)
+                {
+                    BSPRenderWorker.RunWorkerAsync();
+                }
+            }
+        }
+
+        public void DeleteEquation(int index)
+        {
+            equations.RemoveAt(index);
+            UpdateFrame();
+        }
+
+        public void ToggleEquationVisibility(int index)
+        {
+            equations[index].hidden = !equations[index].hidden;
             UpdateFrame();
         }
 
@@ -289,7 +353,15 @@ namespace calculator_gui
                 }
             }
 
-            if (calculator.isValidExpression)
+            bool shouldCalculate = false;
+            foreach (Equation equation in equations)
+            {
+                if (equation.calculator.isValidExpression)
+                {
+                    shouldCalculate = true;
+                }
+            }
+            if (shouldCalculate)
             {
                 if (!calculationWorker.IsBusy)
                 {
@@ -313,7 +385,7 @@ namespace calculator_gui
                     {
                         queuedGraphUpdate = false;
                     }
-                    graphRenderWorker.RunWorkerAsync(bspRoot);
+                    graphRenderWorker.RunWorkerAsync();
                 }
                 else
                 {
@@ -331,7 +403,7 @@ namespace calculator_gui
                         {
                             queuedBSPRender = false;
                         }
-                        BSPRenderWorker.RunWorkerAsync(bspRoot);
+                        BSPRenderWorker.RunWorkerAsync();
                     }
                     else
                     {
@@ -352,7 +424,15 @@ namespace calculator_gui
             compositingStopwatch.Start();
 
             renderer.OverlayBitmapRenderer(ref axesRendererOutput);
-            if (calculator.isValidExpression)
+            bool shouldCalculate = false;
+            foreach (Equation equation in equations)
+            {
+                if (equation.calculator.isValidExpression)
+                {
+                    shouldCalculate = true;
+                }
+            }
+            if (shouldCalculate)
             {
                 renderer.OverlayBitmapRenderer(ref graphRendererOutput);
             }
@@ -398,7 +478,11 @@ namespace calculator_gui
                 {
                     queuedCalculation = false;
                 }
-                e.Result = BSP();
+                Parallel.ForEach(equations, equation =>
+                {
+                    equation.maxDepth = maxDepth;
+                    equation.BSP();
+                });
             }
             while (queuedCalculation);
             calculationStopwatch.Stop();
@@ -406,14 +490,13 @@ namespace calculator_gui
 
         private void EndBSP(object sender, RunWorkerCompletedEventArgs e)
         {
-            bspRoot = (BSPNode)(e.Result);
             if (!graphRenderWorker.IsBusy)
             {
                 lock (_queuedGraphUpdateLock)
                 {
                     queuedGraphUpdate = false;
                 }
-                graphRenderWorker.RunWorkerAsync(bspRoot);
+                graphRenderWorker.RunWorkerAsync();
             }
             else
             {
@@ -427,74 +510,7 @@ namespace calculator_gui
             {
                 if (!BSPRenderWorker.IsBusy)
                 {
-                    BSPRenderWorker.RunWorkerAsync(bspRoot);
-                }
-            }
-        }
-
-        private BSPNode BSP()
-        {
-            BSPNode root = new BSPNode() { xMin = minX, xMax = maxX, yMin = minY, yMax = maxY, containsGraph = false };
-            if (calculator.InsideBounds((root.xMin, root.xMax), (root.yMin, root.yMax)))
-            {
-                root.containsGraph = true;
-                if (maxDepth != 0)
-                {
-                    BSPDescend(root, 1);
-                }
-            }
-            return root;
-        }
-
-        private void BSPDescend(BSPNode root, int depth)
-        {
-            root.children.Add(new BSPNode()
-            {
-                xMin = root.xMin,
-                xMax = (root.xMax + root.xMin) / 2,
-                yMin = root.yMin,
-                yMax = (root.yMax + root.yMin) / 2,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = (root.xMax + root.xMin) / 2,
-                xMax = root.xMax,
-                yMin = root.yMin,
-                yMax = (root.yMax + root.yMin) / 2,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = root.xMin,
-                xMax = (root.xMax + root.xMin) / 2,
-                yMin = (root.yMax + root.yMin) / 2,
-                yMax = root.yMax,
-                containsGraph = false
-            });
-            root.children.Add(new BSPNode()
-            {
-                xMin = (root.xMax + root.xMin) / 2,
-                xMax = root.xMax,
-                yMin = (root.yMax + root.yMin) / 2,
-                yMax = root.yMax,
-                containsGraph = false
-            });
-            foreach (BSPNode child in root.children)
-            {
-                if (calculator.InsideBounds((child.xMin, child.xMax), (child.yMin, child.yMax)))
-                {
-                    child.containsGraph = true;
-                }
-            }
-            foreach (BSPNode child in root.children)
-            {
-                if (child.containsGraph)
-                {
-                    if (depth < maxDepth && depth < absoluteMaxDepth)
-                    {
-                        BSPDescend(child, depth + 1);
-                    }
+                    BSPRenderWorker.RunWorkerAsync();
                 }
             }
         }
@@ -595,7 +611,13 @@ namespace calculator_gui
             graph.maxY = maxY;
             graph.pixelWidth = pixelWidth;
             graph.pixelHeight = pixelHeight;
-            graph.DrawGraph(root);
+            foreach (Equation equation in equations)
+            {
+                if (!equation.hidden)
+                {
+                    graph.DrawGraph(equation);
+                }
+            }
 
             curveStopwatch.Stop();
             renderingStopwatch.Stop();
@@ -632,16 +654,22 @@ namespace calculator_gui
                     queuedBSPRender = false;
                 }
                 BitmapRenderer bitmapRenderer = new BitmapRenderer(pixelWidth, pixelHeight);
-                BSPNode root = e.Argument as BSPNode;
+                foreach (Equation equation in equations)
+                {
+                    if (!equation.hidden)
+                    {
+                        BSPNode root = equation.root;
 
-                BSPRenderer bsp = new BSPRenderer(ref bitmapRenderer);
-                bsp.minX = minX;
-                bsp.maxX = maxX;
-                bsp.minY = minY;
-                bsp.maxY = maxY;
-                bsp.pixelWidth = pixelWidth;
-                bsp.pixelHeight = pixelHeight;
-                bsp.DrawBSP(root);
+                        BSPRenderer bsp = new BSPRenderer(ref bitmapRenderer);
+                        bsp.minX = minX;
+                        bsp.maxX = maxX;
+                        bsp.minY = minY;
+                        bsp.maxY = maxY;
+                        bsp.pixelWidth = pixelWidth;
+                        bsp.pixelHeight = pixelHeight;
+                        bsp.DrawBSP(root);
+                    }
+                }
 
                 e.Result = bitmapRenderer;
                 BSPRenderWorker.ReportProgress(50, e.Result);
@@ -868,12 +896,20 @@ namespace calculator_gui
 
     internal class GraphRenderer : Renderer
     {
+        private Color colour;
+
         public GraphRenderer(ref BitmapRenderer newRenderer)
         {
             renderer = newRenderer;
         }
 
-        public void DrawGraph(BSPNode root)
+        public void DrawGraph(Equation equation)
+        {
+            colour = equation.colour;   
+            DrawGraph(equation.root);
+        }
+
+        private void DrawGraph(BSPNode root)
         {
             DrawCell(ref root);
             for (int index = 0; index < root.children.Count; index++)
@@ -882,7 +918,7 @@ namespace calculator_gui
             }
         }
 
-        public void DrawCell(ref BSPNode node)
+        private void DrawCell(ref BSPNode node)
         {
             int realXMin = RealiseX(node.xMin);
             int realXMax = RealiseX(node.xMax);
@@ -890,7 +926,7 @@ namespace calculator_gui
             int realYMax = RealiseY(node.yMax);
             if (node.containsGraph && node.children.Count == 0)
             {
-                renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref App.MainApp.graphingColours.axesColour);
+                renderer.DrawRectangle(realXMin, realYMax, realXMax - realXMin, realYMin - realYMax, ref colour);
             }
         }
     }
@@ -908,9 +944,12 @@ namespace calculator_gui
             {
                 DrawBSPNode(ref root);
             }
-            for (int index = 0; index < root.children.Count; index++)
+            else
             {
-                DrawBSP(root.children[index]);
+                foreach (BSPNode child in root.children)
+                {
+                    DrawBSP(child);
+                }
             }
         }
 
@@ -979,6 +1018,115 @@ namespace calculator_gui
 
             importColour = (System.Windows.Media.Color)App.MainApp.FindResource("GraphBSPLineValid");
             BSPLineValid = Color.FromArgb(255, importColour.R, importColour.G, importColour.B);
+        }
+    }
+
+    internal class Equation
+    {
+        public BSPNode root;
+        private BSPNode workingRoot;
+        public FreeformCalculator calculator = new FreeformCalculator();
+        public Color colour;
+        public bool hidden;
+
+        public float minX;
+        public float maxX;
+        public float minY;
+        public float maxY;
+
+        public int maxDepth;
+        public int absoluteMaxDepth;
+
+        public Equation(Color newColour, int newMaxDepth, int newAbsoluteMaxDepth)
+        {
+            colour = newColour;
+            root = new BSPNode();
+            workingRoot = new BSPNode();
+            maxDepth = newMaxDepth;
+            absoluteMaxDepth = newAbsoluteMaxDepth;
+        }
+
+        public void NewEquation(string equation)
+        {
+            calculator.Input = equation;
+        }
+
+        public void NewBounds(float xMin, float xMax, float yMin, float yMax)
+        {
+            minX = xMin; 
+            maxX = xMax; 
+            minY = yMin; 
+            maxY = yMax;
+        }
+
+        public void BSP()
+        {
+            if (!hidden)
+            {
+                workingRoot = new BSPNode() { xMin = minX, xMax = maxX, yMin = minY, yMax = maxY, containsGraph = false };
+                if (calculator.InsideBounds((root.xMin, root.xMax), (root.yMin, root.yMax)))
+                {
+                    root.containsGraph = true;
+                    if (maxDepth != 0)
+                    {
+                        BSPDescend(workingRoot, 1);
+                    }
+                }
+                root = workingRoot;
+            }
+        }
+
+        private void BSPDescend(BSPNode root, int depth)
+        {
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = root.yMin,
+                yMax = (root.yMax + root.yMin) / 2,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = root.xMin,
+                xMax = (root.xMax + root.xMin) / 2,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            root.children.Add(new BSPNode()
+            {
+                xMin = (root.xMax + root.xMin) / 2,
+                xMax = root.xMax,
+                yMin = (root.yMax + root.yMin) / 2,
+                yMax = root.yMax,
+                containsGraph = false
+            });
+            foreach (BSPNode child in root.children)
+            {
+                if (calculator.InsideBounds((child.xMin, child.xMax), (child.yMin, child.yMax)))
+                {
+                    child.containsGraph = true;
+                }
+            }
+            foreach (BSPNode child in root.children)
+            {
+                if (child.containsGraph)
+                {
+                    if (depth < maxDepth && depth < absoluteMaxDepth)
+                    {
+                        BSPDescend(child, depth + 1);
+                    }
+                }
+            }
         }
     }
 }

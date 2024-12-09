@@ -32,11 +32,19 @@ namespace calculator_gui
         {
             InitializeComponent();
             grapher = new Grapher(ref OutputImage);
+            App.MainApp.colourList = new ColourList();
         }
 
         public void EquationTextChanged(object sender, EventArgs e)
         {
-            grapher.NewEquation(((EquationBox)sender).Text);
+            int index = EquationList.Children.IndexOf(sender as EquationBox);
+            grapher.UpdateEquation(index, ((EquationBox)sender).Text);
+        }
+
+        public void EquationColourChanged(object sender, EventArgs e)
+        {
+            int index = EquationList.Children.IndexOf(sender as EquationBox);
+            grapher.UpdateColour(index, ((EquationBox)sender).colour);
         }
 
         public void ImageSize_Changed(object sender, SizeChangedEventArgs e)
@@ -83,14 +91,61 @@ namespace calculator_gui
             }
         }
 
+        public void EquationDeleted(object sender, EventArgs e)
+        {
+            int index = EquationList.Children.IndexOf(sender as EquationBox);
+            grapher.DeleteEquation(index);
+            EquationList.Children.Remove(sender as EquationBox);
+        }
+
+        public void EquationHidden(object sender, EventArgs e)
+        {
+            int index = EquationList.Children.IndexOf(sender as EquationBox);
+            grapher.ToggleEquationVisibility(index);
+        }
+
         public void AddNewEquation(object sender, RoutedEventArgs e)
         {
             EquationBox equationBox = new EquationBox();
             equationBox.Margin = new Thickness(0, 5, 0, 5);
             equationBox.TextChanged += EquationTextChanged;
+            equationBox.ColourChanged += EquationColourChanged;
+            equationBox.DeleteEquation += EquationDeleted;
+            equationBox.VisiblilityChanged += EquationHidden;
             App.MainApp.clickSound.Play();
             EquationList.Children.Insert(
                 EquationList.Children.Count - 1, equationBox);
+            grapher.NewEquation("", equationBox.colour);
+        }
+    }
+
+    public class ColourList
+    {
+        private Color[] colours;
+        private int index;
+
+        public ColourList()
+        {
+            colours = new Color[8];
+            colours[0] = Colors.Red;
+            colours[1] = Colors.Green;
+            colours[2] = Colors.Blue;
+            colours[3] = Colors.Yellow;
+            colours[4] = Colors.Cyan;
+            colours[5] = Colors.Magenta;
+            colours[6] = Colors.Brown;
+            colours[7] = Colors.Black;
+            index = 0;
+        }
+
+        public Color NextColour()
+        {
+            Color colour = colours[index++];
+            if (index >= colours.Length)
+            {
+                index = 0;
+            }
+            return colour;
         }
     }
 }

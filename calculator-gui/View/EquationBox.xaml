@@ -8,13 +8,15 @@
              d:DesignHeight="450" d:DesignWidth="800">
     
     <Border Style="{DynamicResource Border}">
-        <StackPanel Orientation="Horizontal">
-            <Button Name="VisibilityButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="VisibilityClicked">👁</Button>
-            <Button Name="ColourButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="ColourButtonClicked">
-                <Ellipse Width="16" Height="16" Stroke="{DynamicResource BorderColour}" StrokeThickness="1" Margin="2" Fill="Black"/>
+        <DockPanel>
+            <Button Name="VisibilityButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="VisibilityClicked" ToolTip="Toggle Visibility">👁</Button>
+            <Button Name="ColourButton" Style="{DynamicResource InvisibleButton}" Width="20" Click="ColourButtonClicked" ToolTip="Change Colour">
+                <Ellipse Name="ColourCircle" Width="16" Height="16" Stroke="{DynamicResource BorderColour}" StrokeThickness="1" Margin="2" Fill="Black"/>
             </Button>
             <Rectangle Width="1" Fill="{DynamicResource BorderColour}"/>
+            <Button Name="DeleteButton" Style="{DynamicResource InvisibleButton}" Width="20" DockPanel.Dock="Right" ToolTip="Delete Equation" Click="DeleteButtonClicked">❌</Button>
+            <Rectangle Width="1" Fill="{DynamicResource BorderColour}" DockPanel.Dock="Right"/>
             <TextBox Name="Equation" Grid.Column="1" Margin="10" MinWidth="100" Style="{DynamicResource TextBox}" TextChanged="EquationTextChanged"/>
-        </StackPanel>
+        </DockPanel>
     </Border>
 </UserControl>

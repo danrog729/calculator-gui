@@ -22,6 +22,7 @@ namespace calculator_gui
         public List<Theme> themes = new List<Theme>();
         private Theme _currentTheme;
         public GraphingColours graphingColours;
+        public ColourList colourList;
 
         public Sound clickSound;
 

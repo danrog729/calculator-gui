@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -180,7 +181,7 @@ namespace calculator_gui
                 smallerHeight = bitmapRenderer.height;
             }
             bitmap.Lock();
-            graphics.DrawImage(bitmapRenderer.backingBitmap, new Rectangle(0, 0, bitmapRenderer.width, bitmapRenderer.height));
+            graphics.DrawImageUnscaled(bitmapRenderer.backingBitmap, new Rectangle(0, 0, bitmapRenderer.width, bitmapRenderer.height));
             bitmap.AddDirtyRect(new System.Windows.Int32Rect(0, 0, smallerWidth, smallerHeight));
             bitmap.Unlock();
         }

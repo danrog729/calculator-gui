@@ -22,12 +22,17 @@ namespace calculator_gui
     {
         public event EventHandler TextChanged;
         public event EventHandler VisiblilityChanged;
+        public event EventHandler ColourChanged;
+        public event EventHandler DeleteEquation;
+        public Color colour;
         public string Text;
         public bool GraphHidden;
 
         public EquationBox()
         {
             InitializeComponent();
+            colour = App.MainApp.colourList.NextColour();
+            ColourCircle.Fill = new SolidColorBrush(colour);
         }
 
         private void EquationTextChanged(object sender, RoutedEventArgs e)
@@ -42,10 +47,6 @@ namespace calculator_gui
         {
             App.MainApp.clickSound.Play();
             GraphHidden = !GraphHidden;
-            if (VisiblilityChanged != null)
-            {
-                VisiblilityChanged(this, e);
-            }
             if (GraphHidden)
             {
                 VisibilityButton.Content = "○";
@@ -54,10 +55,29 @@ namespace calculator_gui
             {
                 VisibilityButton.Content = "👁";
             }
+            if (VisiblilityChanged != null)
+            {
+                VisiblilityChanged(this, e);
+            }
         }
         private void ColourButtonClicked(object sender, RoutedEventArgs e)
         {
             App.MainApp.clickSound.Play();
+            colour = App.MainApp.colourList.NextColour();
+            ColourCircle.Fill = new SolidColorBrush(colour);
+            if (ColourChanged != null)
+            {
+                ColourChanged(this, e);
+            }
+        }
+
+        private void DeleteButtonClicked(object sender, RoutedEventArgs e)
+        {
+            App.MainApp.clickSound.Play();
+            if (DeleteEquation != null)
+            {
+                DeleteEquation(this, e);
+            }
         }
     }
 }
